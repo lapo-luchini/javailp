@@ -109,9 +109,9 @@ public class SolverSAT4J extends AbstractSolver {
 				VecInt vars = new VecInt();
 				IVec<BigInteger> coeffs = new Vec<BigInteger>();
 
-				for (int j = 0; j < objective.size(); j++) {
-					Object variable = objective.getVariables().get(j);
-					Number coeff = objective.getCoefficients().get(j);
+				for (Term term : objective) {
+					Object variable = term.getVariable();
+					Number coeff = term.getCoefficient();
 					int index = varToIndex.get(variable);
 
 					BigInteger integer = toBigInt(coeff);
@@ -135,9 +135,9 @@ public class SolverSAT4J extends AbstractSolver {
 
 					VecInt vars = new VecInt();
 					IVec<BigInteger> coeffs = new Vec<BigInteger>();
-					for (int j = 0; j < linear.size(); j++) {
-						Object variable = linear.getVariables().get(j);
-						Number coeff = linear.getCoefficients().get(j);
+					for (Term term : linear) {
+						Object variable = term.getVariable();
+						Number coeff = term.getCoefficient();
 						int index = varToIndex.get(variable);
 						vars.push(index);
 						coeffs.push(toBigInt(coeff));
@@ -189,9 +189,9 @@ public class SolverSAT4J extends AbstractSolver {
 					Linear objective = problem.getObjective();
 					double sum = 0;
 
-					for (int j = 0; j < objective.size(); j++) {
-						Object variable = objective.getVariables().get(j);
-						Number coeff = objective.getCoefficients().get(j);
+					for (Term term : objective) {
+						Object variable = term.getVariable();
+						Number coeff = term.getCoefficient();
 
 						if (r.get(variable)) {
 							sum += coeff.doubleValue();

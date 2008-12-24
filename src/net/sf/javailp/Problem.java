@@ -63,10 +63,10 @@ public class Problem {
 	 *            the objective function
 	 */
 	public void setObjective(Linear objective) {
-		for (Object variable : objective.getVariables()) {
-			variables.add(variable);
+		for (Term term : objective) {
+			variables.add(term.getVariable());
 		}
-		Linear linear = new Linear(objective.getCoefficients(), objective.getVariables());
+		Linear linear = new Linear(objective);
 		this.objective = linear;
 	}
 
@@ -166,8 +166,8 @@ public class Problem {
 	 *            the constraint to be added
 	 */
 	public void add(Constraint constraint) {
-		for (Object variable : constraint.getLhs().getVariables()) {
-			variables.add(variable);
+		for (Term term : constraint.getLhs()) {
+			variables.add(term.getVariable());
 		}
 		constraints.add(constraint);
 	}
@@ -183,7 +183,7 @@ public class Problem {
 	 *            the right-hand-side number
 	 */
 	public void add(Linear lhs, Operator operator, Number rhs) {
-		Linear linear = new Linear(lhs.getCoefficients(), lhs.getVariables());
+		Linear linear = new Linear(lhs);
 		Constraint constraint = new Constraint(linear, operator, rhs);
 		add(constraint);
 	}
@@ -349,10 +349,10 @@ public class Problem {
 				}
 			}
 		}
-		
+
 		s += "Variables" + N;
 		for (Object variable : getVariables()) {
-			s += " "+variable+" "+getVarType(variable)+N;
+			s += " " + variable + " " + getVarType(variable) + N;
 		}
 
 		return s;

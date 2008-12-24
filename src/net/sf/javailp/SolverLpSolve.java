@@ -242,15 +242,10 @@ public class SolverLpSolve extends AbstractSolver {
 	}
 
 	protected void convert(Linear linear, int[] var, double[] coeffs, Map<Object, Integer> varToIndex) {
-
 		int i = 0;
-		for (Object variable : linear.getVariables()) {
-			var[i] = varToIndex.get(variable);
-			i++;
-		}
-		i = 0;
-		for (Number coefficient : linear.getCoefficients()) {
-			coeffs[i] = coefficient.doubleValue();
+		for (Term term : linear) {
+			var[i] = varToIndex.get(term.getVariable());
+			coeffs[i] = term.getCoefficient().doubleValue();
 			i++;
 		}
 	}

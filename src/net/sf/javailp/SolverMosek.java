@@ -112,8 +112,8 @@ public class SolverMosek extends AbstractSolver {
 
 			conToIndex.put(constraint, i);
 
-			for (Object variable : linear.getVariables()) {
-				List<Constraint> list = varToConstraints.get(variable);
+			for (Term term : linear) {
+				List<Constraint> list = varToConstraints.get(term.getVariable());
 				list.add(constraint);
 			}
 		}
@@ -157,7 +157,13 @@ public class SolverMosek extends AbstractSolver {
 					for (Constraint constraint : constraints) {
 						int index = conToIndex.get(constraint);
 						Linear linear = constraint.getLhs();
-						Number coeff = linear.getCoefficients().get(linear.getVariables().indexOf(variable));
+						Number coeff = 0.0;
+						for (Term term : linear) {
+							if (term.getVariable().equals(variable)) {
+								coeff = term.getCoefficient();
+								break;
+							}
+						}
 
 						cons.add(index);
 						coeffs.add(coeff.doubleValue());
@@ -272,9 +278,9 @@ public class SolverMosek extends AbstractSolver {
 			if (problem.getObjective() != null) {
 				Linear linear = problem.getObjective();
 				double obj = 0;
-				for (int j = 0; j < linear.size(); j++) {
-					Object variable = linear.getVariables().get(j);
-					Number coeff = linear.getCoefficients().get(j);
+				for (Term term : linear) {
+					Object variable = term.getVariable();
+					Number coeff = term.getCoefficient();
 
 					int index = varToIndex.get(variable);
 					obj += coeff.doubleValue() * x[index];
@@ -328,15 +334,10 @@ public class SolverMosek extends AbstractSolver {
 	}
 
 	protected void convert(Linear linear, int[] var, double[] coeffs, Map<Object, Integer> varToIndex) {
-
 		int i = 0;
-		for (Object variable : linear.getVariables()) {
-			var[i] = varToIndex.get(variable);
-			i++;
-		}
-		i = 0;
-		for (Number coefficient : linear.getCoefficients()) {
-			coeffs[i] = coefficient.doubleValue();
+		for (Term term : linear) {
+			var[i] = varToIndex.get(term.getVariable());
+			coeffs[i] = term.getCoefficient().doubleValue();
 			i++;
 		}
 	}

@@ -164,10 +164,10 @@ public class SolverGLPK extends AbstractSolver {
 		if (problem.getObjective() != null) {
 			Linear objective = problem.getObjective();
 
-			for (int j = 0; j < objective.size(); j++) {
-				Object variable = objective.getVariables().get(j);
+			for (Term term : objective) {
+				Object variable = term.getVariable();
 				int index = varToIndex.get(variable);
-				double coeff = objective.getCoefficients().get(j).doubleValue();
+				double coeff = term.getCoefficient().doubleValue();
 
 				solver.setObjCoef(index, coeff);
 			}
@@ -193,13 +193,15 @@ public class SolverGLPK extends AbstractSolver {
 				int[] vars = new int[size + 1];
 				double[] coeffs = new double[size + 1];
 
-				for (int j = 0; j < size; j++) {
-					Object variable = linear.getVariables().get(j);
+				int j = 1;
+				for(Term term: linear){
+					Object variable = term.getVariable();
 					int index = varToIndex.get(variable);
-					double coeff = linear.getCoefficients().get(j).doubleValue();
+					double coeff = term.getCoefficient().doubleValue();
 
-					vars[j + 1] = index;
-					coeffs[j + 1] = coeff;
+					vars[j] = index;
+					coeffs[j] = coeff;
+					j++;
 				}
 
 				solver.setMatRow(k, size, vars, coeffs);
@@ -236,8 +238,8 @@ public class SolverGLPK extends AbstractSolver {
 		if (timeout != null) {
 			System.err.println("Cannot set TIMEOUT parameter for Glpk.");
 		}
-		
-		for(Hook hook: hooks){
+
+		for (Hook hook : hooks) {
 			hook.call(solver, varToIndex);
 		}
 

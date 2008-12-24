@@ -56,7 +56,7 @@ public class SolverCPLEX extends AbstractSolver {
 	}
 
 	protected final Set<Hook> hooks = new HashSet<Hook>();
-	
+
 	/**
 	 * Adds a hook.
 	 * 
@@ -148,8 +148,8 @@ public class SolverCPLEX extends AbstractSolver {
 					cplex.addMaximize(lin);
 				}
 			}
-			
-			for(Hook hook: hooks){
+
+			for (Hook hook : hooks) {
 				hook.call(cplex, varToNum);
 			}
 
@@ -209,16 +209,13 @@ public class SolverCPLEX extends AbstractSolver {
 	}
 
 	protected void convert(Linear linear, IloLinearNumExpr lin, Map<Object, IloNumVar> varToNum) throws IloException {
-		int size = linear.size();
-		for (int i = 0; i < size; i++) {
-			Number coeff = linear.getCoefficients().get(i);
-			Object variable = linear.getVariables().get(i);
+		for (Term term : linear) {
+			Number coeff = term.getCoefficient();
+			Object variable = term.getVariable();
 
 			IloNumVar num = varToNum.get(variable);
-
 			lin.addTerm(coeff.doubleValue(), num);
 		}
-
 	}
 
 }

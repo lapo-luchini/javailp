@@ -15,6 +15,7 @@
 package net.sf.javailp;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -24,10 +25,9 @@ import java.util.List;
  * @author lukasiewycz
  * 
  */
-public class Linear {
+public class Linear implements Iterable<Term> {
 
-	protected final List<Number> coefficients = new ArrayList<Number>();
-	protected final List<Object> variables = new ArrayList<Object>();
+	protected final List<Term> terms = new ArrayList<Term>();
 
 	/**
 	 * Constructs an empty linear expression.
@@ -49,9 +49,26 @@ public class Linear {
 		this();
 		if (coefficients.size() != variables.size()) {
 			throw new IllegalArgumentException("The size of the varibales and coefficients must be equal.");
+		} else {
+			for (int i = 0; i < variables.size(); i++) {
+				Object variable = variables.get(i);
+				Number coefficient = coefficients.get(i);
+				Term term = new Term(variable, coefficient);
+				add(term);
+			}
 		}
-		this.coefficients.addAll(coefficients);
-		this.variables.addAll(variables);
+	}
+
+	/**
+	 * Constructs a linear expression from the terms.
+	 * 
+	 * @param terms
+	 *            the terms to be added
+	 */
+	public Linear(Iterable<Term> terms) {
+		for(Term term: terms){
+			add(term);
+		}
 	}
 
 	/**
@@ -60,6 +77,10 @@ public class Linear {
 	 * @return the coefficients
 	 */
 	public List<Number> getCoefficients() {
+		List<Number> coefficients = new ArrayList<Number>();
+		for (Term term : terms) {
+			coefficients.add(term.getCoefficient());
+		}
 		return coefficients;
 	}
 
@@ -69,6 +90,10 @@ public class Linear {
 	 * @return the variables
 	 */
 	public List<Object> getVariables() {
+		List<Object> variables = new ArrayList<Object>();
+		for (Term term : terms) {
+			variables.add(term.getVariable());
+		}
 		return variables;
 	}
 
@@ -81,8 +106,20 @@ public class Linear {
 	 *            the variable
 	 */
 	public void add(Number coefficient, Object variable) {
-		coefficients.add(coefficient);
-		variables.add(variable);
+		Term term = new Term(variable, coefficient);
+		add(term);
+	}
+
+	/**
+	 * Adds terms.
+	 * 
+	 * @param terms
+	 *            the terms to be added
+	 */
+	public void add(Term... terms) {
+		for (Term term : terms) {
+			this.terms.add(term);
+		}
 	}
 
 	/**
@@ -91,15 +128,14 @@ public class Linear {
 	 * @return the size
 	 */
 	public int size() {
-		return coefficients.size();
+		return terms.size();
 	}
 
 	/**
 	 * Removes all elements.
 	 */
 	public void clear() {
-		coefficients.clear();
-		variables.clear();
+		terms.clear();
 	}
 
 	/*
@@ -110,9 +146,10 @@ public class Linear {
 	@Override
 	public String toString() {
 		String s = "";
-		for (int i = 0; i < size(); i++) {
-			Number coeff = coefficients.get(i);
-			Object variable = variables.get(i);
+		for (int i = 0; i < terms.size(); i++) {
+			Term term = terms.get(i);
+			Number coeff = term.getCoefficient();
+			Object variable = term.getVariable();
 
 			s += coeff + "*" + variable;
 			if (i < size() - 1) {
@@ -121,5 +158,15 @@ public class Linear {
 		}
 		return s;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Iterable#iterator()
+	 */
+	public Iterator<Term> iterator() {
+		return terms.iterator();
+	}
+
 
 }
