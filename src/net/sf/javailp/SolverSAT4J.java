@@ -16,7 +16,9 @@ package net.sf.javailp;
 
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.sat4j.core.Vec;
 import org.sat4j.core.VecInt;
@@ -34,6 +36,48 @@ import org.sat4j.specs.TimeoutException;
  * 
  */
 public class SolverSAT4J extends AbstractSolver {
+
+	/**
+	 * The {@code Hook} for the {@code SolverSAT4J}.
+	 * 
+	 * @author lukasiewycz
+	 * 
+	 */
+	public interface Hook {
+
+		/**
+		 * This method is called once before the optimization and allows to
+		 * change some internal settings.
+		 * 
+		 * @param solver
+		 *            the sat4j solver
+		 * @param varToIndex
+		 *            the map of variables to sat4j specific variables
+		 */
+		public void call(PBSolverResolution solver, Map<Object, Integer> varToIndex);
+	}
+
+	protected final Set<Hook> hooks = new HashSet<Hook>();
+
+	/**
+	 * Adds a hook.
+	 * 
+	 * @param hook
+	 *            the hook to be added
+	 */
+	public void addHook(Hook hook) {
+		hooks.add(hook);
+	}
+
+	/**
+	 * Removes a hook
+	 * 
+	 * @param hook
+	 *            the hook to be removed
+	 */
+	public void removeHook(Hook hook) {
+		hooks.remove(hook);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -126,6 +170,10 @@ public class SolverSAT4J extends AbstractSolver {
 						solver.addAtMost(vars, 0);
 					}
 				}
+			}
+
+			for (Hook hook : hooks) {
+				hook.call(solver, varToIndex);
 			}
 
 			if (solver.isSatisfiable()) {

@@ -16,8 +16,10 @@ package net.sf.javailp;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import mosek.Env;
 import mosek.Error;
@@ -33,10 +35,59 @@ import mosek.Warning;
 public class SolverMosek extends AbstractSolver {
 
 	protected final Env env;
+	protected final Set<Hook> hooks = new HashSet<Hook>();
 
+	/**
+	 * Constructs a {@code SolverMosek}.
+	 * 
+	 * @param env
+	 *            the {@code mosek} environment
+	 */
 	public SolverMosek(Env env) {
 		super();
 		this.env = env;
+	}
+
+	/**
+	 * The {@code Hook} for the {@code SolverMosek}.
+	 * 
+	 * @author lukasiewycz
+	 * 
+	 */
+	public interface Hook {
+
+		/**
+		 * This method is called once before the optimization and allows to
+		 * change some internal settings.
+		 * 
+		 * @param env
+		 *            the environment
+		 * @param task
+		 *            the task
+		 * @param varToIndex
+		 *            the map of variables to mosek specific variables
+		 */
+		public void call(Env env, Task task, Map<Object, Integer> varToIndex);
+	}
+
+	/**
+	 * Adds a hook.
+	 * 
+	 * @param hook
+	 *            the hook to be added
+	 */
+	public void addHook(Hook hook) {
+		hooks.add(hook);
+	}
+
+	/**
+	 * Removes a hook
+	 * 
+	 * @param hook
+	 *            the hook to be removed
+	 */
+	public void removeHook(Hook hook) {
+		hooks.remove(hook);
 	}
 
 	public Result solve(Problem problem) {
@@ -204,6 +255,10 @@ public class SolverMosek extends AbstractSolver {
 				}
 			}
 			initWithParameters(task);
+
+			for (Hook hook : hooks) {
+				hook.call(env, task, varToIndex);
+			}
 
 			task.optimize();
 

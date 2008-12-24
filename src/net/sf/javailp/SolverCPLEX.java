@@ -22,7 +22,9 @@ import ilog.cplex.IloCplex;
 import ilog.cplex.IloCplex.DoubleParam;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 /**
@@ -31,27 +33,48 @@ import java.util.Map.Entry;
  * @author lukasiewycz
  * 
  */
-public class SolverCPLEX implements Solver {
+public class SolverCPLEX extends AbstractSolver {
 
-	protected final Map<Object, Object> parameters = new HashMap<Object, Object>();
-
-	/*
-	 * (non-Javadoc)
+	/**
+	 * The {@code Hook} for the {@code SolverCPLEX}.
 	 * 
-	 * @see net.sf.javailp.Solver#getParameters()
+	 * @author lukasiewycz
+	 * 
 	 */
-	public Map<Object, Object> getParameters() {
-		return parameters;
+	public interface Hook {
+
+		/**
+		 * This method is called once before the optimization and allows to
+		 * change some internal settings.
+		 * 
+		 * @param cplex
+		 *            the cplex solver
+		 * @param varToNum
+		 *            the map of variables to cplex specific variables
+		 */
+		public void call(IloCplex cplex, Map<Object, IloNumVar> varToNum);
 	}
 
-	/*
-	 * (non-Javadoc)
+	protected final Set<Hook> hooks = new HashSet<Hook>();
+	
+	/**
+	 * Adds a hook.
 	 * 
-	 * @see net.sf.javailp.Solver#setParameter(java.lang.Object,
-	 * java.lang.Object)
+	 * @param hook
+	 *            the hook to be added
 	 */
-	public void setParameter(Object parameter, Object value) {
-		parameters.put(parameter, value);
+	public void addHook(Hook hook) {
+		hooks.add(hook);
+	}
+
+	/**
+	 * Removes a hook
+	 * 
+	 * @param hook
+	 *            the hook to be removed
+	 */
+	public void removeHook(Hook hook) {
+		hooks.remove(hook);
 	}
 
 	/*
@@ -124,6 +147,10 @@ public class SolverCPLEX implements Solver {
 				} else {
 					cplex.addMaximize(lin);
 				}
+			}
+			
+			for(Hook hook: hooks){
+				hook.call(cplex, varToNum);
 			}
 
 			cplex.solve();

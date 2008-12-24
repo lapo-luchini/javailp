@@ -14,9 +14,9 @@ public class Test {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		SolverFactory factory = new SolverFactoryLpSolve();
-		factory.setParameter(Solver.VERBOSE, 0);
-		factory.setParameter(Solver.TIMEOUT, 100);
+		SolverFactory factory = new SolverFactoryLpSolve(); // use lp_solve
+		factory.setParameter(Solver.VERBOSE, 0); 
+		factory.setParameter(Solver.TIMEOUT, 100); // set timeout to 100 seconds
 
 		/**
 		 * Constructing a Problem: 
@@ -58,7 +58,7 @@ public class Test {
 		problem.setVarType("x", Integer.class);
 		problem.setVarType("y", Integer.class);
 
-		Solver solver = factory.get();
+		Solver solver = factory.get(); // you should use this solver only once for one problem
 		Result result = solver.solve(problem);
 
 		System.out.println(result);

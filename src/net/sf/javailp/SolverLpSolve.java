@@ -15,7 +15,9 @@
 package net.sf.javailp;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
@@ -27,6 +29,48 @@ import lpsolve.LpSolveException;
  * 
  */
 public class SolverLpSolve extends AbstractSolver {
+
+	/**
+	 * The {@code Hook} for the {@code SolverLpSolve}.
+	 * 
+	 * @author lukasiewycz
+	 * 
+	 */
+	public interface Hook {
+
+		/**
+		 * This method is called once before the optimization and allows to
+		 * change some internal settings.
+		 * 
+		 * @param lp
+		 *            the lp solver
+		 * @param varToIndex
+		 *            the map of variables to lp specific variables
+		 */
+		public void call(LpSolve lp, Map<Object, Integer> varToIndex);
+	}
+
+	protected final Set<Hook> hooks = new HashSet<Hook>();
+
+	/**
+	 * Adds a hook.
+	 * 
+	 * @param hook
+	 *            the hook to be added
+	 */
+	public void addHook(Hook hook) {
+		hooks.add(hook);
+	}
+
+	/**
+	 * Removes a hook
+	 * 
+	 * @param hook
+	 *            the hook to be removed
+	 */
+	public void removeHook(Hook hook) {
+		hooks.remove(hook);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -129,6 +173,10 @@ public class SolverLpSolve extends AbstractSolver {
 				} else {
 					lp.setMaxim();
 				}
+			}
+
+			for (Hook hook : hooks) {
+				hook.call(lp, varToIndex);
 			}
 
 			@SuppressWarnings("unused")
