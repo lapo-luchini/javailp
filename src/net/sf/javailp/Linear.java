@@ -17,6 +17,7 @@ package net.sf.javailp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The class {@code Linear} is a linear expression consisting of variables and
@@ -48,7 +49,8 @@ public class Linear implements Iterable<Term> {
 	public Linear(List<Number> coefficients, List<Object> variables) {
 		this();
 		if (coefficients.size() != variables.size()) {
-			throw new IllegalArgumentException("The size of the varibales and coefficients must be equal.");
+			throw new IllegalArgumentException(
+					"The size of the varibales and coefficients must be equal.");
 		} else {
 			for (int i = 0; i < variables.size(); i++) {
 				Object variable = variables.get(i);
@@ -66,7 +68,7 @@ public class Linear implements Iterable<Term> {
 	 *            the terms to be added
 	 */
 	public Linear(Iterable<Term> terms) {
-		for(Term term: terms){
+		for (Term term : terms) {
 			add(term);
 		}
 	}
@@ -159,6 +161,40 @@ public class Linear implements Iterable<Term> {
 		return s;
 	}
 
+	/**
+	 * Calculates the value of the linear expression.
+	 * 
+	 * @param result
+	 *            the result
+	 * @return the value
+	 */
+	public Number calculate(Map<Object, Number> result) {
+		double d = 0.0;
+		boolean asDouble = false;
+		
+		for (Term term : terms) {
+			Object variable = term.getVariable();
+
+			Number coeff = term.getCoefficient();
+			Number value = result.get(variable);
+			if(coeff instanceof Double || value instanceof Double){
+				asDouble = true;
+			}
+			
+			if (value != null) {
+				d += coeff.doubleValue() * value.doubleValue();
+			} else {
+				throw new IllegalArgumentException("The variable " + variable
+						+ " is missing in the given result.");
+			}
+		}
+		if(asDouble){
+			return d;
+		} else {
+			return (long)d;
+		}
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -167,6 +203,5 @@ public class Linear implements Iterable<Term> {
 	public Iterator<Term> iterator() {
 		return terms.iterator();
 	}
-
 
 }

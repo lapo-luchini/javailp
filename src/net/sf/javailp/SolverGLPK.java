@@ -248,8 +248,7 @@ public class SolverGLPK extends AbstractSolver {
 
 		Result result;
 		if (problem.getObjective() != null) {
-			double obj = solver.mipObjVal();
-			result = new Result(obj);
+			result = new Result(problem.getObjective());
 		} else {
 			result = new Result();
 		}

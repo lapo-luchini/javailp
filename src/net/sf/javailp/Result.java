@@ -15,6 +15,7 @@
 package net.sf.javailp;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The class {@code Result} is a result of a {@code Problem}.
@@ -22,24 +23,33 @@ import java.util.HashMap;
  * @author lukasiewycz
  * 
  */
-public class Result extends HashMap<Object, Number> {
+public class Result extends HashMap<Object, Number> implements
+		Map<Object, Number> {
 
-	protected final Number objective;
+	protected Number objectiveValue = null;
+	protected Linear objectiveFunction = null;
 
 	/**
 	 * Constructs a {@code Result} for a {@code Problem} without objective
 	 * function.
 	 */
 	public Result() {
-		this.objective = null;
 	}
 
 	/**
 	 * Constructs a {@code Result} for a {@code Problem} with objective function
 	 * and the optimal value.
 	 */
-	public Result(Number objective) {
-		this.objective = objective;
+	public Result(Number objectiveValue) {
+		this.objectiveValue = objectiveValue;
+	}
+
+	/**
+	 * Constructs a {@code Result} for a {@code Problem} with an objective
+	 * function.
+	 */
+	public Result(Linear objectiveFunction) {
+		this.objectiveFunction = objectiveFunction;
 	}
 
 	/**
@@ -48,7 +58,14 @@ public class Result extends HashMap<Object, Number> {
 	 * @return the objective value
 	 */
 	public Number getObjective() {
-		return objective;
+		if (objectiveValue != null) {
+			return objectiveValue;
+		} else if (objectiveFunction != null) {
+			objectiveValue = objectiveFunction.calculate(this);
+			return objectiveValue;
+		} else {
+			return null;
+		}
 	}
 
 	/**
@@ -75,7 +92,7 @@ public class Result extends HashMap<Object, Number> {
 	 */
 	@Override
 	public String toString() {
-		return "Objective: " + objective + " " + super.toString();
+		return "Objective: " + getObjective() + " " + super.toString();
 	}
 
 	private static final long serialVersionUID = 1L;

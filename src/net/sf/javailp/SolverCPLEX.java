@@ -96,8 +96,10 @@ public class SolverCPLEX extends AbstractSolver {
 				Number lowerBound = problem.getVarLowerBound(variable);
 				Number upperBound = problem.getVarUpperBound(variable);
 
-				double lb = (lowerBound != null ? lowerBound.doubleValue() : Double.NEGATIVE_INFINITY);
-				double ub = (upperBound != null ? upperBound.doubleValue() : Double.POSITIVE_INFINITY);
+				double lb = (lowerBound != null ? lowerBound.doubleValue()
+						: Double.NEGATIVE_INFINITY);
+				double ub = (upperBound != null ? upperBound.doubleValue()
+						: Double.POSITIVE_INFINITY);
 
 				final IloNumVarType type;
 				switch (varType) {
@@ -157,8 +159,8 @@ public class SolverCPLEX extends AbstractSolver {
 
 			final Result result;
 			if (problem.getObjective() != null) {
-				double obj = cplex.getObjValue();
-				result = new Result(obj);
+				Linear objective = problem.getObjective();
+				result = new Result(objective);
 			} else {
 				result = new Result();
 			}
@@ -208,7 +210,8 @@ public class SolverCPLEX extends AbstractSolver {
 
 	}
 
-	protected void convert(Linear linear, IloLinearNumExpr lin, Map<Object, IloNumVar> varToNum) throws IloException {
+	protected void convert(Linear linear, IloLinearNumExpr lin,
+			Map<Object, IloNumVar> varToNum) throws IloException {
 		for (Term term : linear) {
 			Number coeff = term.getCoefficient();
 			Object variable = term.getVariable();

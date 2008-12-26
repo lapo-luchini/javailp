@@ -347,6 +347,7 @@ public class Problem {
 				if (ub != null) {
 					s += " <= " + ub;
 				}
+				s += N;
 			}
 		}
 

@@ -37,6 +37,8 @@ import org.sat4j.specs.TimeoutException;
  */
 public class SolverSAT4J extends AbstractSolver {
 
+	protected static boolean print = false;
+
 	/**
 	 * The {@code Hook} for the {@code SolverSAT4J}.
 	 * 
@@ -54,7 +56,8 @@ public class SolverSAT4J extends AbstractSolver {
 		 * @param varToIndex
 		 *            the map of variables to sat4j specific variables
 		 */
-		public void call(PBSolverResolution solver, Map<Object, Integer> varToIndex);
+		public void call(PBSolverResolution solver,
+				Map<Object, Integer> varToIndex);
 	}
 
 	protected final Set<Hook> hooks = new HashSet<Hook>();
@@ -99,11 +102,14 @@ public class SolverSAT4J extends AbstractSolver {
 				i++;
 			}
 
-			PBSolverResolution solver = SolverFactory.newPBResMixedConstraintsObjective();
+			PBSolverResolution solver = SolverFactory
+					.newPBResMixedConstraintsObjective();
 			solver.newVar(problem.getVariablesCount());
 
+			// boolean isMax = (problem.getOptType() == OptType.MAX);
+
 			if (problem.getObjective() != null) {
-				boolean isMax = (problem.getOptType() == OptType.MAX);
+
 				Linear objective = problem.getObjective();
 
 				VecInt vars = new VecInt();
@@ -115,9 +121,6 @@ public class SolverSAT4J extends AbstractSolver {
 					int index = varToIndex.get(variable);
 
 					BigInteger integer = toBigInt(coeff);
-					if (isMax) {
-						integer = integer.negate();
-					}
 
 					vars.push(index);
 					coeffs.push(integer);
@@ -175,52 +178,80 @@ public class SolverSAT4J extends AbstractSolver {
 			for (Hook hook : hooks) {
 				hook.call(solver, varToIndex);
 			}
+			
+			initWithParameters(solver);
 
-			if (solver.isSatisfiable()) {
+			Map<Object, Number> r = new HashMap<Object, Number>();
+			Linear objective = problem.getObjective();
 
-				Map<Object, Boolean> r = new HashMap<Object, Boolean>();
-				for (Object variable : problem.variables) {
-					int index = varToIndex.get(variable);
-					r.put(variable, solver.model(index));
-				}
+			try {
+				while (solver.isSatisfiable()) {
+					r.clear();
+					for (Object variable : problem.variables) {
+						int index = varToIndex.get(variable);
+						r.put(variable, solver.model(index) ? 1 : 0);
+					}
+					if (objective == null) {
+						break;
+					}
 
-				Result result;
-				if (problem.getObjective() != null) {
-					Linear objective = problem.getObjective();
-					double sum = 0;
+					Number value = objective.calculate(r);
+
+					if (print) {
+						System.out.println("Found new solution: " + value);
+					}
+
+					VecInt vars = new VecInt();
+					IVec<BigInteger> coeffs = new Vec<BigInteger>();
 
 					for (Term term : objective) {
 						Object variable = term.getVariable();
 						Number coeff = term.getCoefficient();
+						int index = varToIndex.get(variable);
 
-						if (r.get(variable)) {
-							sum += coeff.doubleValue();
-						}
+						BigInteger integer = toBigInt(coeff);
+
+						vars.push(index);
+						coeffs.push(integer);
 					}
 
-					result = new Result(sum);
-				} else {
+					long rhs = value.longValue();
+
+					boolean isMax = problem.getOptType() == OptType.MAX;
+					if (isMax) {
+						rhs++;
+					} else {
+						rhs--;
+					}
+					solver.addPseudoBoolean(vars, coeffs, isMax, toBigInt(rhs));
+				}
+			} catch (ContradictionException ex) {
+			}
+
+			if (r.isEmpty()) {
+				return null;
+			} else {
+				Result result;
+
+				if (objective == null) {
 					result = new Result();
+				} else {
+					result = new Result(objective);
 				}
 
 				for (Object variable : problem.variables) {
-					boolean b = r.get(variable);
-					result.put(variable, b ? 1 : 0);
-
+					Number b = r.get(variable);
+					result.put(variable, b);
 				}
 
 				return result;
-
-			} else {
-				return null;
 			}
 
-		} catch (ContradictionException e) {
+		} catch (ContradictionException ex) {
 			System.err.println("ContradictionException.");
-		} catch (TimeoutException e) {
+		} catch (TimeoutException ex) {
 			System.err.println("TimeoutException.");
 		}
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -238,9 +269,11 @@ public class SolverSAT4J extends AbstractSolver {
 			Number number = (Number) verbose;
 			int value = number.intValue();
 			if (value == 0) {
+				print = false;
 				// do nothing
 			} else if (value > 0) {
-				solver.printStat(System.out, "");
+				print = true;
+				solver.printStat(System.out, " ");
 			}
 		}
 
@@ -249,7 +282,10 @@ public class SolverSAT4J extends AbstractSolver {
 	protected void check(Object variable, Problem problem) {
 		VarType type = problem.getVarType(variable);
 		if (type != VarType.BOOL) {
-			throw new IllegalArgumentException("Variable " + variable + " is not a binary variable. SAT4J can only solve 0-1 ILPs.");
+			throw new IllegalArgumentException(
+					"Variable "
+							+ variable
+							+ " is not a binary variable. SAT4J can only solve 0-1 ILPs.");
 		}
 	}
 
@@ -259,7 +295,8 @@ public class SolverSAT4J extends AbstractSolver {
 
 		if (dvalue != Math.round(dvalue)) {
 			throw new IllegalArgumentException(
-					"SAT4J can only solve 0-1 ILPs (all coefficients have to be integer values). Found coefficient: " + dvalue);
+					"SAT4J can only solve 0-1 ILPs (all coefficients have to be integer values). Found coefficient: "
+							+ dvalue);
 		}
 
 		BigInteger big = BigInteger.valueOf(lvalue);

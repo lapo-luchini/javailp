@@ -276,16 +276,7 @@ public class SolverMosek extends AbstractSolver {
 			Result result;
 
 			if (problem.getObjective() != null) {
-				Linear linear = problem.getObjective();
-				double obj = 0;
-				for (Term term : linear) {
-					Object variable = term.getVariable();
-					Number coeff = term.getCoefficient();
-
-					int index = varToIndex.get(variable);
-					obj += coeff.doubleValue() * x[index];
-				}
-				result = new Result(obj);
+				result = new Result(problem.getObjective());
 			} else {
 				result = new Result();
 			}

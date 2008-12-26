@@ -184,8 +184,7 @@ public class SolverLpSolve extends AbstractSolver {
 
 			final Result result;
 			if (problem.getObjective() != null) {
-				double obj = lp.getObjective();
-				result = new Result(obj);
+				result = new Result(problem.getObjective());
 			} else {
 				result = new Result();
 			}
