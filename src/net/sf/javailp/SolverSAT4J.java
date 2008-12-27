@@ -248,7 +248,6 @@ public class SolverSAT4J extends AbstractSolver {
 			}
 
 		} catch (ContradictionException ex) {
-			System.err.println("ContradictionException.");
 		} catch (TimeoutException ex) {
 			System.err.println("TimeoutException.");
 		}

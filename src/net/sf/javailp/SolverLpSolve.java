@@ -179,8 +179,13 @@ public class SolverLpSolve extends AbstractSolver {
 				hook.call(lp, varToIndex);
 			}
 
-			@SuppressWarnings("unused")
 			int ret = lp.solve();
+			
+			
+			if(ret == 2){
+				lp.deleteLp();
+				return null;
+			}
 
 			final Result result;
 			if (problem.getObjective() != null) {

@@ -245,6 +245,11 @@ public class SolverGLPK extends AbstractSolver {
 
 		solver.simplex();
 		solver.integer();
+		
+		int p = solver.getStatus();
+		if(p == GlpkSolver.LPX_NOFEAS){
+			return null;
+		}
 
 		Result result;
 		if (problem.getObjective() != null) {

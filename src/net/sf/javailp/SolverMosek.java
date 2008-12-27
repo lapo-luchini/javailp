@@ -268,7 +268,20 @@ public class SolverMosek extends AbstractSolver {
 
 			task.optimize();
 
-			// task.solutionsummary(mosek.Env.streamtype.msg);
+			int[] prosta = new int[1];
+			int[] solsta = new int[1];
+
+			task.getsolutionstatus(mosek.Env.soltype.itg, prosta, solsta);
+			
+			int p = prosta[0];
+			
+			if(p == mosek.Env.prosta.prim_infeas || 
+					p == mosek.Env.prosta.prim_and_dual_infeas ||
+					p == mosek.Env.prosta.dual_infeas || 
+					p == mosek.Env.prosta.prim_infeas_or_unbounded){
+				task.dispose();
+				return null;
+			}
 
 			double[] x = new double[nvar];
 			task.getsolutionslice(mosek.Env.soltype.itg, mosek.Env.solitem.xx, 0, nvar, x);
