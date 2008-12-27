@@ -45,7 +45,7 @@
 
 	<target name="jar" depends="compile" description="Build jar.">
 		<mkdir dir="${build.dir}/jar" />
-		<jar jarfile="${build.dir}/jar/opt4j-${version}.jar">
+		<jar jarfile="${build.dir}/jar/javailp-${version}.jar">
 			<fileset dir="${build.dir}/classes" />
 		</jar>
 	</target>
