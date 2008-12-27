@@ -61,7 +61,7 @@ public class Result extends HashMap<Object, Number> implements
 		if (objectiveValue != null) {
 			return objectiveValue;
 		} else if (objectiveFunction != null) {
-			objectiveValue = objectiveFunction.calculate(this);
+			objectiveValue = objectiveFunction.evaluate(this);
 			return objectiveValue;
 		} else {
 			return null;

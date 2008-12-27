@@ -195,7 +195,7 @@ public class SolverSAT4J extends AbstractSolver {
 						break;
 					}
 
-					Number value = objective.calculate(r);
+					Number value = objective.evaluate(r);
 
 					if (print) {
 						System.out.println("Found new solution: " + value);

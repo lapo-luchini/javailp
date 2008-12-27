@@ -162,13 +162,13 @@ public class Linear implements Iterable<Term> {
 	}
 
 	/**
-	 * Calculates the value of the linear expression.
+	 * Evaluates the value of the linear expression.
 	 * 
 	 * @param result
 	 *            the result
 	 * @return the value
 	 */
-	public Number calculate(Map<Object, Number> result) {
+	public Number evaluate(Map<Object, Number> result) {
 		double d = 0.0;
 		boolean asDouble = false;
 		
