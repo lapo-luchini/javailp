@@ -104,7 +104,7 @@ public class SolverSAT4J extends AbstractSolver {
 
 			PBSolverResolution solver = SolverFactory
 					.newPBResMixedConstraintsObjective();
-			solver.newVar(problem.getVariablesCount());
+			solver.newVar(problem.getVariablesCount()+1);
 
 			// boolean isMax = (problem.getOptType() == OptType.MAX);
 
