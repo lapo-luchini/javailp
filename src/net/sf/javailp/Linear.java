@@ -171,16 +171,16 @@ public class Linear implements Iterable<Term> {
 	public Number evaluate(Map<Object, Number> result) {
 		double d = 0.0;
 		boolean asDouble = false;
-		
+
 		for (Term term : terms) {
 			Object variable = term.getVariable();
 
 			Number coeff = term.getCoefficient();
 			Number value = result.get(variable);
-			if(coeff instanceof Double || value instanceof Double){
+			if (coeff instanceof Double || value instanceof Double) {
 				asDouble = true;
 			}
-			
+
 			if (value != null) {
 				d += coeff.doubleValue() * value.doubleValue();
 			} else {
@@ -188,10 +188,10 @@ public class Linear implements Iterable<Term> {
 						+ " is missing in the given result.");
 			}
 		}
-		if(asDouble){
+		if (asDouble) {
 			return d;
 		} else {
-			return (long)d;
+			return (long) d;
 		}
 	}
 
@@ -202,6 +202,17 @@ public class Linear implements Iterable<Term> {
 	 */
 	public Iterator<Term> iterator() {
 		return terms.iterator();
+	}
+
+	/**
+	 * Returns the {@code i}-th {@code Term}.
+	 * 
+	 * @param i
+	 *            the index
+	 * @return the term
+	 */
+	public Term get(int i) {
+		return terms.get(i);
 	}
 
 }

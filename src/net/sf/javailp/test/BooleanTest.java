@@ -1,3 +1,17 @@
+/**
+ * Java ILP is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Java ILP is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with Java ILP. If not, see http://www.gnu.org/licenses/.
+ */
 package net.sf.javailp.test;
 
 import java.util.Random;
@@ -12,6 +26,7 @@ import net.sf.javailp.SolverFactory;
 import net.sf.javailp.SolverFactoryCPLEX;
 import net.sf.javailp.SolverFactoryGLPK;
 import net.sf.javailp.SolverFactoryLpSolve;
+import net.sf.javailp.SolverFactoryMiniSat;
 import net.sf.javailp.SolverFactoryMosek;
 import net.sf.javailp.SolverFactorySAT4J;
 
@@ -67,9 +82,29 @@ public class BooleanTest {
 		testMax(new SolverFactorySAT4J());
 	}
 
+	@Test
+	public void testMiniSatMin() {
+		testMin(new SolverFactoryMiniSat());
+	}
+
+	@Test
+	public void testMiniSatMax() {
+		testMax(new SolverFactoryMiniSat());
+	}
+	
+	@Test
+	public void testMiniSatSAT() {
+		testSAT(new SolverFactoryMiniSat());
+	}
+	
+	@Test
+	public void testSAT4JSAT() {
+		testSAT(new SolverFactorySAT4J());
+	}
+
 	protected void testMin(SolverFactory factory) {
 
-		Problem problem = getProblem(8, 0);
+		Problem problem = getProblem(8, 0, true);
 		problem.setOptimizationType(OptType.MIN);
 		Solver solver = factory.get();
 		solver.setParameter(Solver.VERBOSE, 0);
@@ -81,7 +116,7 @@ public class BooleanTest {
 
 	protected void testMax(SolverFactory factory) {
 
-		Problem problem = getProblem(8, 0);
+		Problem problem = getProblem(8, 0, true);
 		problem.setOptimizationType(OptType.MAX);
 		Solver solver = factory.get();
 		solver.setParameter(Solver.VERBOSE, 0);
@@ -90,8 +125,20 @@ public class BooleanTest {
 
 		Assert.assertEquals(result.getObjective().intValue(), 537);
 	}
+	
+	protected void testSAT(SolverFactory factory) {
 
-	protected Problem getProblem(int size, int seed) {
+		Problem problem = getProblem(40, 0, false);
+		problem.setOptimizationType(OptType.MIN);
+		Solver solver = factory.get();
+		solver.setParameter(Solver.VERBOSE, 0);
+
+		Result result = solver.solve(problem);
+
+		Assert.assertNotNull(result);
+	}
+
+	protected Problem getProblem(int size, int seed, boolean obj) {
 		Problem problem = new Problem();
 
 		Random random = new Random(seed);
@@ -104,7 +151,9 @@ public class BooleanTest {
 				objective.add(random.nextInt(100), var);
 			}
 		}
-		problem.setObjective(objective);
+		if (obj) {
+			problem.setObjective(objective);
+		}
 
 		for (int i = 0; i < size; i++) {
 			Linear l1 = new Linear();

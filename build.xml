@@ -12,6 +12,8 @@
 	<!-- VERSIONING -->
 	<!-- <property name="version" value="snapshot-${date-flat}" /> -->
 	<property name="version" value="beta-1" />
+	
+	<property name="version-minisat" value="1" />
 
 	<path id="compile.classpath">
 		<fileset dir="${lib.dir}" includes="*.jar" />
@@ -22,7 +24,7 @@
 		<filter token="DATE" value="${date}" />
 	</filterset>
 
-	<target name="all" depends="init,jar,javadoc" description="Perform all tasks." />
+	<target name="all" depends="jar,javadoc,jar-minisat" description="Perform all tasks." />
 
 	<target name="init">
 		<mkdir dir="${build.dir}/src" />
@@ -33,6 +35,12 @@
 			</fileset>
 			<filterset refid="defaultFilter" />
 		</copy>
+
+
+	</target>
+
+	<target name="init-minisat">
+		<copy file="${src.dir}/net/sf/javailp/minisat/MiniSat.java" toDir="${build.dir}/src_minisat/net/sf/javailp/minisat" overwrite="true" />
 	</target>
 
 	<target name="compile" depends="init" description="Compile Java source.">
@@ -43,10 +51,25 @@
 		</javac>
 	</target>
 
+	<target name="compile-minisat" depends="init-minisat" description="Compile Java source (MiniSat).">
+		<mkdir dir="${build.dir}/classes_minisat" />
+		<javac srcdir="${build.dir}/src_minisat" debug="on" destdir="${build.dir}/classes_minisat" source="1.5" target="1.5">
+			<classpath refid="compile.classpath" />
+			<compilerarg value="-Xlint" />
+		</javac>
+	</target>
+
 	<target name="jar" depends="compile" description="Build jar.">
 		<mkdir dir="${build.dir}/jar" />
 		<jar jarfile="${build.dir}/jar/javailp-${version}.jar">
 			<fileset dir="${build.dir}/classes" />
+		</jar>
+	</target>
+	
+	<target name="jar-minisat" depends="compile-minisat" description="Build jar (MiniSat).">
+		<mkdir dir="${build.dir}/jar" />
+		<jar jarfile="${build.dir}/jar/minisatjni${version-minisat}.jar">
+			<fileset dir="${build.dir}/classes_minisat" />
 		</jar>
 	</target>
 

@@ -334,7 +334,6 @@ public class SolverMosek extends AbstractSolver {
 				task.putintparam(Env.iparam.log, 1);
 			}
 		}
-
 	}
 
 	protected void convert(Linear linear, int[] var, double[] coeffs, Map<Object, Integer> varToIndex) {
