@@ -39,6 +39,8 @@ public class SolverSAT4J extends AbstractSolver {
 
 	protected static boolean print = false;
 
+	protected int timeout = Integer.MAX_VALUE;
+
 	/**
 	 * The {@code Hook} for the {@code SolverSAT4J}.
 	 * 
@@ -56,8 +58,7 @@ public class SolverSAT4J extends AbstractSolver {
 		 * @param varToIndex
 		 *            the map of variables to sat4j specific variables
 		 */
-		public void call(PBSolverResolution solver,
-				Map<Object, Integer> varToIndex);
+		public void call(PBSolverResolution solver, Map<Object, Integer> varToIndex);
 	}
 
 	protected final Set<Hook> hooks = new HashSet<Hook>();
@@ -102,9 +103,8 @@ public class SolverSAT4J extends AbstractSolver {
 				i++;
 			}
 
-			PBSolverResolution solver = SolverFactory
-					.newPBResMixedConstraintsObjective();
-			solver.newVar(problem.getVariablesCount()+1);
+			PBSolverResolution solver = SolverFactory.newPBResMixedConstraintsObjective();
+			solver.newVar(problem.getVariablesCount() + 1);
 
 			// boolean isMax = (problem.getOptType() == OptType.MAX);
 
@@ -178,13 +178,20 @@ public class SolverSAT4J extends AbstractSolver {
 			for (Hook hook : hooks) {
 				hook.call(solver, varToIndex);
 			}
-			
+
 			initWithParameters(solver);
 
 			Map<Object, Number> r = new HashMap<Object, Number>();
 			Linear objective = problem.getObjective();
 
+			long startTime = System.currentTimeMillis();
+
 			try {
+				long currentTime = System.currentTimeMillis();
+				int diff = (int) Math.floor((double) (currentTime - startTime) / 1000.0);
+				int t = Math.max(this.timeout - diff, 0);
+				solver.setTimeout(t);
+
 				while (solver.isSatisfiable()) {
 					r.clear();
 					for (Object variable : problem.variables) {
@@ -224,8 +231,15 @@ public class SolverSAT4J extends AbstractSolver {
 						rhs--;
 					}
 					solver.addPseudoBoolean(vars, coeffs, isMax, toBigInt(rhs));
+
+					currentTime = System.currentTimeMillis();
+					diff = (int) Math.floor((double) (currentTime - startTime) / 1000.0);
+					t = Math.max(this.timeout - diff, 0);
+					solver.setTimeout(t);
 				}
 			} catch (ContradictionException ex) {
+			} catch (TimeoutException ex) {
+				System.out.println("SAT4J Timeout");
 			}
 
 			if (r.isEmpty()) {
@@ -248,8 +262,6 @@ public class SolverSAT4J extends AbstractSolver {
 			}
 
 		} catch (ContradictionException ex) {
-		} catch (TimeoutException ex) {
-			System.err.println("TimeoutException.");
 		}
 		return null;
 	}
@@ -260,8 +272,7 @@ public class SolverSAT4J extends AbstractSolver {
 
 		if (timeout != null && timeout instanceof Number) {
 			Number number = (Number) timeout;
-			int value = number.intValue();
-			solver.setTimeout(value);
+			this.timeout = number.intValue();
 		}
 		if (verbose != null && verbose instanceof Number) {
 
@@ -281,10 +292,7 @@ public class SolverSAT4J extends AbstractSolver {
 	protected void check(Object variable, Problem problem) {
 		VarType type = problem.getVarType(variable);
 		if (type != VarType.BOOL) {
-			throw new IllegalArgumentException(
-					"Variable "
-							+ variable
-							+ " is not a binary variable. SAT4J can only solve 0-1 ILPs.");
+			throw new IllegalArgumentException("Variable " + variable + " is not a binary variable. SAT4J can only solve 0-1 ILPs.");
 		}
 	}
 
@@ -294,8 +302,7 @@ public class SolverSAT4J extends AbstractSolver {
 
 		if (dvalue != Math.round(dvalue)) {
 			throw new IllegalArgumentException(
-					"SAT4J can only solve 0-1 ILPs (all coefficients have to be integer values). Found coefficient: "
-							+ dvalue);
+					"SAT4J can only solve 0-1 ILPs (all coefficients have to be integer values). Found coefficient: " + dvalue);
 		}
 
 		BigInteger big = BigInteger.valueOf(lvalue);
