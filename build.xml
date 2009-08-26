@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="javailp" default="compile">
+<project name="javailp" default="jar">
 
 	<property file="utils/build.properties" />
 
@@ -11,7 +11,7 @@
 
 	<!-- VERSIONING -->
 	<!-- <property name="version" value="snapshot-${date-flat}" /> -->
-	<property name="version" value="beta-2" />
+	<property name="version" value="1.0" />
 	
 	<property name="version-minisat" value="1" />
 
