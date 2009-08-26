@@ -37,7 +37,7 @@ import org.sat4j.specs.TimeoutException;
  */
 public class SolverSAT4J extends AbstractSolver {
 
-	protected static boolean print = false;
+	protected static boolean print = true;
 
 	protected int timeout = Integer.MAX_VALUE;
 
@@ -58,7 +58,8 @@ public class SolverSAT4J extends AbstractSolver {
 		 * @param varToIndex
 		 *            the map of variables to sat4j specific variables
 		 */
-		public void call(PBSolverResolution solver, Map<Object, Integer> varToIndex);
+		public void call(PBSolverResolution solver,
+				Map<Object, Integer> varToIndex);
 	}
 
 	protected final Set<Hook> hooks = new HashSet<Hook>();
@@ -102,11 +103,14 @@ public class SolverSAT4J extends AbstractSolver {
 				varToIndex.put(variable, i);
 				i++;
 			}
+			
+			
 
-			PBSolverResolution solver = SolverFactory.newPBResMixedConstraintsObjective();
+			PBSolverResolution solver = SolverFactory
+					.newPBResMixedConstraintsObjective();
+			initWithParameters(solver);
+			printOut("Solve problem with SAT4J");
 			solver.newVar(problem.getVariablesCount() + 1);
-
-			// boolean isMax = (problem.getOptType() == OptType.MAX);
 
 			if (problem.getObjective() != null) {
 
@@ -179,16 +183,17 @@ public class SolverSAT4J extends AbstractSolver {
 				hook.call(solver, varToIndex);
 			}
 
-			initWithParameters(solver);
-
 			Map<Object, Number> r = new HashMap<Object, Number>();
 			Linear objective = problem.getObjective();
 
+			
+			
 			long startTime = System.currentTimeMillis();
 
 			try {
 				long currentTime = System.currentTimeMillis();
-				int diff = (int) Math.floor((double) (currentTime - startTime) / 1000.0);
+				int diff = (int) Math
+						.floor((double) (currentTime - startTime) / 1000.0);
 				int t = Math.max(this.timeout - diff, 0);
 				solver.setTimeout(t);
 
@@ -204,9 +209,7 @@ public class SolverSAT4J extends AbstractSolver {
 
 					Number value = objective.evaluate(r);
 
-					if (print) {
-						System.out.println("Found new solution: " + value);
-					}
+					printOut("Found new solution: " + value);
 
 					VecInt vars = new VecInt();
 					IVec<BigInteger> coeffs = new Vec<BigInteger>();
@@ -233,16 +236,19 @@ public class SolverSAT4J extends AbstractSolver {
 					solver.addPseudoBoolean(vars, coeffs, isMax, toBigInt(rhs));
 
 					currentTime = System.currentTimeMillis();
-					diff = (int) Math.floor((double) (currentTime - startTime) / 1000.0);
+					diff = (int) Math
+							.floor((double) (currentTime - startTime) / 1000.0);
 					t = Math.max(this.timeout - diff, 0);
 					solver.setTimeout(t);
 				}
 			} catch (ContradictionException ex) {
+				printErr("Contradictions(2): " + ex.toString());
 			} catch (TimeoutException ex) {
-				System.out.println("SAT4J Timeout");
+				printErr("Timeout");
 			}
 
 			if (r.isEmpty()) {
+				printErr("No feasible solution found");
 				return null;
 			} else {
 				Result result;
@@ -262,8 +268,21 @@ public class SolverSAT4J extends AbstractSolver {
 			}
 
 		} catch (ContradictionException ex) {
+			printErr("Contradictions(1): " + ex.toString());
 		}
 		return null;
+	}
+
+	protected void printOut(String message) {
+		if (print) {
+			System.out.println(message);
+		}
+	}
+
+	protected void printErr(String message) {
+		if (print) {
+			System.err.println(message);
+		}
 	}
 
 	protected void initWithParameters(PBSolverResolution solver) {
@@ -292,7 +311,10 @@ public class SolverSAT4J extends AbstractSolver {
 	protected void check(Object variable, Problem problem) {
 		VarType type = problem.getVarType(variable);
 		if (type != VarType.BOOL) {
-			throw new IllegalArgumentException("Variable " + variable + " is not a binary variable. SAT4J can only solve 0-1 ILPs.");
+			throw new IllegalArgumentException(
+					"Variable "
+							+ variable
+							+ " is not a binary variable. SAT4J can only solve 0-1 ILPs.");
 		}
 	}
 
@@ -302,7 +324,8 @@ public class SolverSAT4J extends AbstractSolver {
 
 		if (dvalue != Math.round(dvalue)) {
 			throw new IllegalArgumentException(
-					"SAT4J can only solve 0-1 ILPs (all coefficients have to be integer values). Found coefficient: " + dvalue);
+					"SAT4J can only solve 0-1 ILPs (all coefficients have to be integer values). Found coefficient: "
+							+ dvalue);
 		}
 
 		BigInteger big = BigInteger.valueOf(lvalue);
