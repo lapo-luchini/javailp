@@ -79,7 +79,7 @@ public abstract class ValueObject {
 	 */
 	public String toString() {
 		String s = "";
-		s += this.getClass().getName();
+		s += this.getClass().getSimpleName();
 		s += "[";
 		for (Field field : getFields()) {
 			try {

@@ -187,11 +187,11 @@ public class SolverLpSolve extends AbstractSolver {
 				return null;
 			}
 
-			final Result result;
+			final ResultImpl result;
 			if (problem.getObjective() != null) {
-				result = new Result(problem.getObjective());
+				result = new ResultImpl(problem.getObjective());
 			} else {
-				result = new Result();
+				result = new ResultImpl();
 			}
 
 			double[] values = new double[problem.getVariablesCount()];

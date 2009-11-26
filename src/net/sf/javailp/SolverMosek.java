@@ -286,12 +286,11 @@ public class SolverMosek extends AbstractSolver {
 			double[] x = new double[nvar];
 			task.getsolutionslice(mosek.Env.soltype.itg, mosek.Env.solitem.xx, 0, nvar, x);
 
-			Result result;
-
+			ResultImpl result;
 			if (problem.getObjective() != null) {
-				result = new Result(problem.getObjective());
+				result = new ResultImpl(problem.getObjective());
 			} else {
-				result = new Result();
+				result = new ResultImpl();
 			}
 
 			for (int j = 0; j < x.length; ++j) {

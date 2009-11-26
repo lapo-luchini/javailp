@@ -265,11 +265,11 @@ public class SolverGLPK extends AbstractSolver {
 			return null;
 		}
 
-		Result result;
+		ResultImpl result;
 		if (problem.getObjective() != null) {
-			result = new Result(problem.getObjective());
+			result = new ResultImpl(problem.getObjective());
 		} else {
-			result = new Result();
+			result = new ResultImpl();
 		}
 
 		// System.out.println(solver.getStatus() == GlpkSolver.LPX_OPT);

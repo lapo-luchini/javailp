@@ -158,12 +158,12 @@ public class SolverCPLEX extends AbstractSolver {
 				return null;
 			}
 
-			final Result result;
+			final ResultImpl result;
 			if (problem.getObjective() != null) {
 				Linear objective = problem.getObjective();
-				result = new Result(objective);
+				result = new ResultImpl(objective);
 			} else {
-				result = new Result();
+				result = new ResultImpl();
 			}
 
 			for (Entry<Object, IloNumVar> entry : varToNum.entrySet()) {

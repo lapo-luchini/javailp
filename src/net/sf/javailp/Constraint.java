@@ -30,13 +30,43 @@ public class Constraint {
 	 * Constructs a {@code Constraint}.
 	 * 
 	 * @param lhs
+	 *            the left hand side
 	 * @param operator
+	 *            the operator
 	 * @param rhs
+	 *            the right hand side
 	 */
 	public Constraint(Linear lhs, Operator operator, Number rhs) {
 		this.lhs = lhs;
 		this.operator = operator;
 		this.rhs = rhs;
+	}
+
+	/**
+	 * Constructs a {@code Constraint}.
+	 * 
+	 * @param lhs
+	 *            the left hand side
+	 * @param operator
+	 *            the operator ("<=","=",">=")
+	 * @param rhs
+	 *            the right hand side
+	 */
+	public Constraint(Linear lhs, String operator, Number rhs) {
+		if (operator.equals("<=")) {
+			this.operator = Operator.LE;
+		} else if (operator.equals("=")) {
+			this.operator = Operator.EQ;
+		} else if (operator.equals(">=")) {
+			this.operator = Operator.GE;
+		} else {
+			throw new IllegalArgumentException("Unknown Boolean operator: "
+					+ operator);
+		}
+
+		this.lhs = lhs;
+		this.rhs = rhs;
+
 	}
 
 	/**
