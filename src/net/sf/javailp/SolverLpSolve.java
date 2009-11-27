@@ -181,8 +181,10 @@ public class SolverLpSolve extends AbstractSolver {
 
 			int ret = lp.solve();
 			
-			
-			if(ret == 2){
+			// 0 means optimal
+			// 1 means suboptimal
+			// 12 means feasible
+			if(ret != 0 || ret != 1 || ret != 12){
 				lp.deleteLp();
 				return null;
 			}
