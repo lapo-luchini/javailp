@@ -184,11 +184,11 @@ public class SolverLpSolve extends AbstractSolver {
 			// 0 means optimal
 			// 1 means suboptimal
 			// 12 means feasible
-			if(ret != 0 || ret != 1 || ret != 12){
+			if(ret != 0 && ret != 1 && ret != 12){
 				lp.deleteLp();
 				return null;
 			}
-
+			
 			final ResultImpl result;
 			if (problem.getObjective() != null) {
 				result = new ResultImpl(problem.getObjective());
@@ -196,6 +196,8 @@ public class SolverLpSolve extends AbstractSolver {
 				result = new ResultImpl();
 			}
 
+			
+			
 			double[] values = new double[problem.getVariablesCount()];
 			lp.getVariables(values);
 
