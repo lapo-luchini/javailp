@@ -52,7 +52,8 @@ public interface Solver {
 	public Map<Object, Object> getParameters();
 
 	/**
-	 * Solve the optimization problem.
+	 * Solve the optimization problem. Returns {@code null} if there exists no
+	 * feasible solution for the problem.
 	 * 
 	 * @param problem
 	 *            the optimization problem

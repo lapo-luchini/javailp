@@ -251,12 +251,11 @@ public class SolverSAT4J extends AbstractSolver {
 				printErr("No feasible solution found");
 				return null;
 			} else {
-				Result result;
-
+				final ResultImpl result;
 				if (objective == null) {
-					result = new Result();
+					result = new ResultImpl();
 				} else {
-					result = new Result(objective);
+					result = new ResultImpl(objective);
 				}
 
 				for (Object variable : problem.variables) {

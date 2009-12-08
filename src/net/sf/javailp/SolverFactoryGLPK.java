@@ -15,7 +15,7 @@
 package net.sf.javailp;
 
 /**
- * The {@code SolverFactoryCPLEX} is a {@code SolverFactory} for GLPK.
+ * The {@code SolverFactoryGLPK} is a {@code SolverFactory} for GLPK.
  * 
  * @author lukasiewycz
  * 

@@ -24,7 +24,6 @@ import net.sf.javailp.Solver;
 import net.sf.javailp.SolverFactory;
 import net.sf.javailp.SolverFactoryCPLEX;
 import net.sf.javailp.SolverFactoryGLPK;
-import net.sf.javailp.SolverFactoryLpSolve;
 
 public class Test {
 
@@ -32,11 +31,11 @@ public class Test {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		testEuler();
+		test();
 	}
 
 	public static void test() {
-		SolverFactory factory = new SolverFactoryLpSolve(); // use lp_solve
+		SolverFactory factory = new SolverFactoryGLPK(); // use lp_solve
 		factory.setParameter(Solver.VERBOSE, 0);
 		factory.setParameter(Solver.TIMEOUT, 100); // set timeout to 100 seconds
 

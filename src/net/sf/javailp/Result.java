@@ -14,87 +14,46 @@
  */
 package net.sf.javailp;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * The class {@code Result} is a result of a {@code Problem}.
  * 
  * @author lukasiewycz
  * 
  */
-public class Result extends HashMap<Object, Number> implements
-		Map<Object, Number> {
-
-	protected Number objectiveValue = null;
-	protected Linear objectiveFunction = null;
-
-	/**
-	 * Constructs a {@code Result} for a {@code Problem} without objective
-	 * function.
-	 */
-	public Result() {
-	}
-
-	/**
-	 * Constructs a {@code Result} for a {@code Problem} with objective function
-	 * and the optimal value.
-	 */
-	public Result(Number objectiveValue) {
-		this.objectiveValue = objectiveValue;
-	}
-
-	/**
-	 * Constructs a {@code Result} for a {@code Problem} with an objective
-	 * function.
-	 */
-	public Result(Linear objectiveFunction) {
-		this.objectiveFunction = objectiveFunction;
-	}
+public interface Result {
 
 	/**
 	 * Returns the objective value.
 	 * 
 	 * @return the objective value
 	 */
-	public Number getObjective() {
-		if (objectiveValue != null) {
-			return objectiveValue;
-		} else if (objectiveFunction != null) {
-			objectiveValue = objectiveFunction.evaluate(this);
-			return objectiveValue;
-		} else {
-			return null;
-		}
-	}
+	public Number getObjective();
 
 	/**
-	 * Returns the value for a specific key as a boolean. (value!=0)
+	 * Returns the value for a specific var as a boolean. (value!=0)
 	 * 
-	 * @param key
-	 *            the key
+	 * @param var
+	 *            the var
 	 * @return {@code true} if the value is not 0
 	 */
-	public boolean getBoolean(Object key) {
-		Number number = get(key);
-		double v = number.doubleValue();
-		if (v == 0) {
-			return false;
-		} else {
-			return true;
-		}
-	}
+	public boolean getBoolean(Object var);
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Returns the value of the variable.
 	 * 
-	 * @see java.util.AbstractMap#toString()
+	 * @param var
+	 *            the variable
+	 * @return the resulting value
 	 */
-	@Override
-	public String toString() {
-		return "Objective: " + getObjective() + " " + super.toString();
-	}
+	public Number get(Object var);
 
-	private static final long serialVersionUID = 1L;
+	/**
+	 * Returns {@code true} if the result contains the variable.
+	 * 
+	 * @param var
+	 *            the variable
+	 * @return {@code true} if the result contains the variable
+	 */
+	public Boolean containsVar(Object var);
 
 }

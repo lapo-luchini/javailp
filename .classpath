@@ -18,16 +18,12 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="javailp/native"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/glpk.jar">
-		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="javailp/native"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="lib" path="lib/org.sat4j.core.jar">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="javailp/native"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/org.sat4j.pb.jar"/>
+	<classpathentry kind="lib" path="lib/glpk-java.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

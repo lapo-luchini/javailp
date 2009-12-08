@@ -44,10 +44,12 @@ public class BooleanTest {
 		testMax(new SolverFactoryCPLEX());
 	}
 
+	@Test
 	public void testGLPKMin() {
 		testMin(new SolverFactoryGLPK());
 	}
 
+	@Test
 	public void testGLPKMax() {
 		testMax(new SolverFactoryGLPK());
 	}
@@ -91,12 +93,12 @@ public class BooleanTest {
 	public void testMiniSatMax() {
 		testMax(new SolverFactoryMiniSat());
 	}
-	
+
 	@Test
 	public void testMiniSatSAT() {
 		testSAT(new SolverFactoryMiniSat());
 	}
-	
+
 	@Test
 	public void testSAT4JSAT() {
 		testSAT(new SolverFactorySAT4J());
@@ -111,7 +113,7 @@ public class BooleanTest {
 
 		Result result = solver.solve(problem);
 
-		Assert.assertEquals(result.getObjective().intValue(), 219);
+		Assert.assertEquals(219, result.getObjective().intValue());
 	}
 
 	protected void testMax(SolverFactory factory) {
@@ -120,12 +122,13 @@ public class BooleanTest {
 		problem.setOptimizationType(OptType.MAX);
 		Solver solver = factory.get();
 		solver.setParameter(Solver.VERBOSE, 0);
+		solver.setParameter(Solver.TIMEOUT, 100);
 
 		Result result = solver.solve(problem);
 
-		Assert.assertEquals(result.getObjective().intValue(), 537);
+		Assert.assertEquals(537, result.getObjective().intValue());
 	}
-	
+
 	protected void testSAT(SolverFactory factory) {
 
 		Problem problem = getProblem(40, 0, false);
