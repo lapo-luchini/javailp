@@ -14,29 +14,21 @@
  */
 package net.sf.javailp;
 
-/**
- * Java ILP is free software: you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation, either version 3 of the License, or (at your
- * option) any later version.
- *
- * Java ILP is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
- * License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with Java ILP. If not, see http://www.gnu.org/licenses/.
- */
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.gnu.glpk.GlpkSolver;
+import org.gnu.glpk.GLPK;
+import org.gnu.glpk.GLPKConstants;
+import org.gnu.glpk.SWIGTYPE_p_double;
+import org.gnu.glpk.SWIGTYPE_p_int;
+import org.gnu.glpk.glp_iocp;
+import org.gnu.glpk.glp_prob;
+import org.gnu.glpk.glp_smcp;
 
 /**
- * The {@code SolverCPLEX} is the {@code Solver} GLPK.
+ * The {@code SolverGLPK} is the {@code Solver} GLPK.
  * 
  * @author lukasiewycz
  * 
@@ -56,11 +48,16 @@ public class SolverGLPK extends AbstractSolver {
 		 * change some internal settings.
 		 * 
 		 * @param glpk
-		 *            the glpk solver
+		 *            the glpk problem
+		 * @param simplexParameters
+		 *            simplex parameters
+		 * @param integerParameters
+		 *            mip parameters
 		 * @param varToIndex
 		 *            the map of variables to glpk specific variables
 		 */
-		public void call(GlpkSolver glpk, Map<Object, Integer> varToIndex);
+		public void call(glp_prob glpk, glp_smcp simplexParameters,
+				glp_iocp integerParameters, Map<Object, Integer> varToIndex);
 	}
 
 	protected final Set<Hook> hooks = new HashSet<Hook>();
@@ -85,6 +82,18 @@ public class SolverGLPK extends AbstractSolver {
 		hooks.remove(hook);
 	}
 
+	static {
+		try {
+			System.loadLibrary("glpk_java");
+		} catch (UnsatisfiedLinkError e) {
+			try {
+				System.loadLibrary("glpk_4_40_java");
+			} catch (UnsatisfiedLinkError e2) {
+				System.out.println("java ilp: glpk library not found");
+			}
+		}
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -105,189 +114,225 @@ public class SolverGLPK extends AbstractSolver {
 		int ncon = problem.getConstraintsCount();
 		int nvar = problem.getVariablesCount();
 
-		GlpkSolver solver = new GlpkSolver();
+		glp_prob lp = null;
 
-		solver.setObjDir(GlpkSolver.LPX_MAX);
-		solver.setClss(GlpkSolver.LPX_MIP);
+		lp = GLPK.glp_create_prob();
 
-		{
-			solver.addCols(nvar);
+		try {
+			GLPK.glp_set_prob_name(lp, "myProblem");
 
-			for (Object variable : problem.getVariables()) {
-				int index = varToIndex.get(variable);
+			{
+				GLPK.glp_add_cols(lp, nvar);
+				for (i = 1; i <= nvar; i++) {
+					Object variable = indexToVar.get(i);
 
-				VarType varType = problem.getVarType(variable);
-				Number lowerBound = problem.getVarLowerBound(variable);
-				Number upperBound = problem.getVarUpperBound(variable);
+					VarType varType = problem.getVarType(variable);
+					Number lowerBound = problem.getVarLowerBound(variable);
+					Number upperBound = problem.getVarUpperBound(variable);
 
-				int type = GlpkSolver.LPX_CV;
-
-				switch (varType) {
-				case BOOL:
-				case INT:
-					type = GlpkSolver.LPX_IV;
-					break;
-				default: // REAL
-					type = GlpkSolver.LPX_CV;
-				}
-
-				Double lb = null;
-				Double ub = null;
-
-				if (varType == VarType.BOOL) {
-					lb = 0.0;
-					ub = 1.0;
-					if (lowerBound != null && lowerBound.doubleValue() > 0) {
-						lb = 1.0;
+					final String name = variable.toString();
+					final int kind;
+					switch (varType) {
+					case BOOL:
+					case INT:
+						kind = GLPKConstants.GLP_IV;
+						break;
+					default: // REAL
+						kind = GLPKConstants.GLP_CV;
 					}
-					if (upperBound != null && upperBound.doubleValue() < 1) {
+
+					Double lb = null;
+					Double ub = null;
+
+					if (varType == VarType.BOOL) {
+						lb = 0.0;
+						ub = 1.0;
+						if (lowerBound != null && lowerBound.doubleValue() > 0) {
+							lb = 1.0;
+						}
+						if (upperBound != null && upperBound.doubleValue() < 1) {
+							ub = 0.0;
+						}
+					} else {
+						if (lowerBound != null) {
+							lb = lowerBound.doubleValue();
+						}
+						if (upperBound != null) {
+							ub = upperBound.doubleValue();
+						}
+					}
+
+					final int bounds;
+					if (lb != null && ub != null) {
+						bounds = GLPKConstants.GLP_DB;
+					} else if (lb != null) {
+						bounds = GLPKConstants.GLP_LO;
+					} else if (ub != null) {
+						bounds = GLPKConstants.GLP_UP;
+					} else {
+						bounds = GLPKConstants.GLP_FR;
+					}
+
+					if (lb == null) {
+						lb = 0.0;
+					}
+					if (ub == null) {
 						ub = 0.0;
 					}
+
+					GLPK.glp_set_col_name(lp, i, name);
+					GLPK.glp_set_col_kind(lp, i, kind);
+					GLPK.glp_set_col_bnds(lp, i, bounds, lb, ub);
+				}
+			}
+
+			{
+				GLPK.glp_add_rows(lp, ncon);
+
+				int k = 1;
+				for (Constraint constraint : problem.getConstraints()) {
+
+					Linear linear = constraint.getLhs();
+					double rhs = constraint.getRhs().doubleValue();
+					int size = linear.size();
+
+					SWIGTYPE_p_int vars = GLPK.new_intArray(size + 1);
+					SWIGTYPE_p_double coeffs = GLPK.new_doubleArray(size + 1);
+
+					int j = 1;
+					for (Term term : linear) {
+						Object variable = term.getVariable();
+						int var = varToIndex.get(variable);
+						double coeff = term.getCoefficient().doubleValue();
+
+						GLPK.intArray_setitem(vars, j, var);
+						GLPK.doubleArray_setitem(coeffs, j, coeff);
+						j++;
+					}
+
+					final int comp;
+					switch (constraint.getOperator()) {
+					case LE:
+						comp = GLPKConstants.GLP_UP;
+						break;
+					case GE:
+						comp = GLPKConstants.GLP_LO;
+						break;
+					default: // EQ
+						comp = GLPKConstants.GLP_FX;
+					}
+
+					GLPK.glp_set_row_name(lp, k, "constraint " + k);
+					GLPK.glp_set_mat_row(lp, k, size, vars, coeffs);
+					GLPK.glp_set_row_bnds(lp, k, comp, rhs, rhs);
+
+					k++;
+				}
+			}
+
+			if (problem.getObjective() != null) {
+				Linear objective = problem.getObjective();
+
+				if (problem.getOptType() == OptType.MAX) {
+					GLPK.glp_set_obj_dir(lp, GLPKConstants.GLP_MAX);
 				} else {
-					if (lowerBound != null) {
-						lb = lowerBound.doubleValue();
-					}
-					if (upperBound != null) {
-						ub = upperBound.doubleValue();
-					}
+					GLPK.glp_set_obj_dir(lp, GLPKConstants.GLP_MIN);
 				}
 
-				int bounds = GlpkSolver.LPX_FR;
-				if (lb != null && ub != null) {
-					bounds = GlpkSolver.LPX_DB;
-				} else if (lb != null) {
-					bounds = GlpkSolver.LPX_LO;
-				} else if (ub != null) {
-					bounds = GlpkSolver.LPX_UP;
-				}
+				GLPK.glp_set_obj_coef(lp, 0, 0);
 
-				if (lb == null) {
-					lb = 0.0;
-				}
-				if (ub == null) {
-					ub = 0.0;
-				}
-
-				solver.setColName(index, variable.toString());
-				solver.setColKind(index, type);
-				solver.setColBnds(index, bounds, lb, ub);
-			}
-
-		}
-
-		if (problem.getObjective() != null) {
-			Linear objective = problem.getObjective();
-
-			for (Term term : objective) {
-				Object variable = term.getVariable();
-				int index = varToIndex.get(variable);
-				double coeff = term.getCoefficient().doubleValue();
-
-				solver.setObjCoef(index, coeff);
-			}
-
-			if (problem.getOptType() == OptType.MAX) {
-				solver.setObjDir(GlpkSolver.LPX_MAX);
-			} else {
-				solver.setObjDir(GlpkSolver.LPX_MIN);
-			}
-
-		}
-
-		{
-			solver.addRows(ncon);
-
-			int k = 1;
-			for (Constraint constraint : problem.getConstraints()) {
-				Linear linear = constraint.getLhs();
-				double rhs = constraint.getRhs().doubleValue();
-
-				int size = linear.size();
-
-				int[] vars = new int[size + 1];
-				double[] coeffs = new double[size + 1];
-
-				int j = 1;
-				for(Term term: linear){
+				final Map<Object, Double> obj = new HashMap<Object, Double>();
+				for (Term term : objective) {
 					Object variable = term.getVariable();
-					int index = varToIndex.get(variable);
 					double coeff = term.getCoefficient().doubleValue();
-
-					vars[j] = index;
-					coeffs[j] = coeff;
-					j++;
+					obj.put(variable, coeff);
 				}
 
-				solver.setMatRow(k, size, vars, coeffs);
+				for (i = 1; i <= nvar; i++) {
+					Object variable = indexToVar.get(i);
+					if (obj.containsKey(variable)) {
+						double coeff = obj.get(variable);
+						GLPK.glp_set_obj_coef(lp, i, coeff);
+					} else {
+						GLPK.glp_set_obj_coef(lp, i, 0);
+					}
+				}
+			}
 
-				final int comp;
-				switch (constraint.getOperator()) {
-				case LE:
-					comp = GlpkSolver.LPX_UP;
+			Object timeout = parameters.get(Solver.TIMEOUT);
+			Object verbose = parameters.get(Solver.VERBOSE);
+
+			glp_smcp simplexParameters = new glp_smcp();
+			glp_iocp integerParameters = new glp_iocp();
+
+			for (Hook hook : hooks) {
+				hook.call(lp, simplexParameters, integerParameters, varToIndex);
+			}
+
+			GLPK.glp_init_smcp(simplexParameters);
+			GLPK.glp_init_iocp(integerParameters);
+
+			if (timeout != null) {
+				int v = ((Number) timeout).intValue() * 1000;
+
+				integerParameters.setTm_lim(v);
+				simplexParameters.setTm_lim(v);
+			}
+
+			if (verbose != null && verbose instanceof Number) {
+				Number number = (Number) verbose;
+				int value = number.intValue();
+				final int msgLevel;
+
+				switch (value) {
+				case 0:
+					msgLevel = GLPKConstants.GLP_MSG_OFF;
 					break;
-				case GE:
-					comp = GlpkSolver.LPX_LO;
+				case 1:
+					msgLevel = GLPKConstants.GLP_MSG_ERR;
 					break;
-				default: // EQ
-					comp = GlpkSolver.LPX_FX;
+				case 2:
+					msgLevel = GLPKConstants.GLP_MSG_ON;
+					break;
+				default: // >= 2
+					msgLevel = GLPKConstants.GLP_MSG_ALL;
+				}
+				simplexParameters.setMsg_lev(msgLevel);
+				integerParameters.setMsg_lev(msgLevel);
+			}
+
+			GLPK.glp_simplex(lp, simplexParameters);
+			GLPK.glp_intopt(lp, integerParameters);
+			int status = GLPK.glp_mip_status(lp);
+
+			if (status == GLPKConstants.GLP_OPT
+					|| status == GLPKConstants.GLP_FEAS) {
+
+				ResultImpl result;
+				if (problem.getObjective() != null) {
+					result = new ResultImpl(problem.getObjective());
+				} else {
+					result = new ResultImpl();
 				}
 
-				solver.setRowBnds(k, comp, rhs, rhs);
+				for (i = 1; i <= nvar; i++) {
+					Object variable = indexToVar.get(i);
+					double value = GLPK.glp_mip_col_val(lp, i);
 
-				k++;
-			}
-		}
-		Object timeout = parameters.get(Solver.TIMEOUT);
-		Object verbose = parameters.get(Solver.VERBOSE);
-
-		if (verbose != null && verbose instanceof Number) {
-			Number number = (Number) verbose;
-			int value = number.intValue();
-			if (value == 0) {
-				solver.enablePrints(false);
-			} else if (value > 0) {
-				solver.enablePrints(true);
-			}
-		}
-		if (timeout != null) {
-			System.err.println("Cannot set TIMEOUT parameter for Glpk.");
-		}
-
-		for (Hook hook : hooks) {
-			hook.call(solver, varToIndex);
-		}
-
-		solver.simplex();
-		solver.integer();
-		
-		int p = solver.getStatus();
-		if(p == GlpkSolver.LPX_NOFEAS){
-			return null;
-		}
-
-		ResultImpl result;
-		if (problem.getObjective() != null) {
-			result = new ResultImpl(problem.getObjective());
-		} else {
-			result = new ResultImpl();
-		}
-
-		// System.out.println(solver.getStatus() == GlpkSolver.LPX_OPT);
-
-		for (Object variable : problem.getVariables()) {
-			int index = varToIndex.get(variable);
-
-			double value = solver.mipColVal(index);
-
-			if (problem.getVarType(variable).isInt()) {
-				int v = (int) Math.round(value);
-				result.put(variable, v);
+					if (problem.getVarType(variable).isInt()) {
+						int v = (int) Math.round(value);
+						result.put(variable, v);
+					} else {
+						result.put(variable, value);
+					}
+				}
+				return result;
 			} else {
-				result.put(variable, value);
+				return null;
 			}
+
+		} finally {
+			GLPK.glp_delete_prob(lp);
 		}
-
-		return result;
 	}
-
 }
