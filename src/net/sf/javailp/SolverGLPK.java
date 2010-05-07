@@ -81,19 +81,7 @@ public class SolverGLPK extends AbstractSolver {
 	public void removeHook(Hook hook) {
 		hooks.remove(hook);
 	}
-
-	static {
-		try {
-			System.loadLibrary("glpk_java");
-		} catch (UnsatisfiedLinkError e) {
-			try {
-				System.loadLibrary("glpk_4_40_java");
-			} catch (UnsatisfiedLinkError e2) {
-				System.out.println("java ilp: glpk library not found");
-			}
-		}
-	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * 
