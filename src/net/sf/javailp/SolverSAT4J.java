@@ -251,7 +251,7 @@ public class SolverSAT4J extends AbstractSolver {
 				printErr("No feasible solution found");
 				return null;
 			} else {
-				final ResultImpl result;
+				final Result result;
 				if (objective == null) {
 					result = new ResultImpl();
 				} else {

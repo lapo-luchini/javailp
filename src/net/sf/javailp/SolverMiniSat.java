@@ -157,7 +157,7 @@ public class SolverMiniSat extends AbstractSolver {
 				objvalue = objective.evaluate(tmpresult);
 			}
 
-			final ResultImpl result;
+			final Result result;
 			if (objvalue != null) {
 				result = new ResultImpl(objvalue);
 			} else {

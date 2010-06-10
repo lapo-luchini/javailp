@@ -158,7 +158,7 @@ public class SolverCPLEX extends AbstractSolver {
 				return null;
 			}
 
-			final ResultImpl result;
+			final Result result;
 			if (problem.getObjective() != null) {
 				Linear objective = problem.getObjective();
 				result = new ResultImpl(objective);
@@ -174,9 +174,9 @@ public class SolverCPLEX extends AbstractSolver {
 				double value = cplex.getValue(num);
 				if (varType.isInt()) {
 					int v = (int) Math.round(value);
-					result.put(variable, v);
+					result.putPrimalValue(variable, v);
 				} else {
-					result.put(variable, value);
+					result.putPrimalValue(variable, value);
 				}
 			}
 

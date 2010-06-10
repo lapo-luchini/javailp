@@ -189,7 +189,7 @@ public class SolverLpSolve extends AbstractSolver {
 				return null;
 			}
 			
-			final ResultImpl result;
+			final Result result;
 			if (problem.getObjective() != null) {
 				result = new ResultImpl(problem.getObjective());
 			} else {
@@ -199,7 +199,9 @@ public class SolverLpSolve extends AbstractSolver {
 			
 			
 			double[] values = new double[problem.getVariablesCount()];
+			double[] dualValues = new double[problem.getConstraintsCount()];
 			lp.getVariables(values);
+			lp.getDualSolution(dualValues);
 
 			for (Object variable : problem.getVariables()) {
 
@@ -210,9 +212,9 @@ public class SolverLpSolve extends AbstractSolver {
 
 				if (varType == VarType.INT || varType == VarType.BOOL) {
 					int v = (int) Math.round(value);
-					result.put(variable, v);
+					result.putPrimalValue(variable, v);
 				} else {
-					result.put(variable, value);
+					result.putPrimalValue(variable, value);
 				}
 			}
 

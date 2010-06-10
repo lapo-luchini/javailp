@@ -15,6 +15,7 @@
 package net.sf.javailp;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The class {@code ResultImpl} is a {@code Map} based implementation of the
@@ -23,8 +24,10 @@ import java.util.HashMap;
  * @author lukasiewycz
  * 
  */
-public class ResultImpl extends HashMap<Object, Number> implements Result {
+public class ResultImpl implements Result {
 
+	protected Map<Object,Number> primalValues;
+	protected Map<Object,Number> dualValues;
 	protected Number objectiveValue = null;
 	protected Linear objectiveFunction = null;
 
@@ -33,6 +36,9 @@ public class ResultImpl extends HashMap<Object, Number> implements Result {
 	 * function.
 	 */
 	public ResultImpl() {
+		super();
+		this.primalValues = new HashMap<Object,Number>();
+		this.dualValues = new HashMap<Object,Number>();
 	}
 
 	/**
@@ -40,6 +46,9 @@ public class ResultImpl extends HashMap<Object, Number> implements Result {
 	 * function and the optimal value.
 	 */
 	public ResultImpl(Number objectiveValue) {
+		super();
+		this.primalValues = new HashMap<Object,Number>();
+		this.dualValues = new HashMap<Object,Number>();
 		this.objectiveValue = objectiveValue;
 	}
 
@@ -48,6 +57,9 @@ public class ResultImpl extends HashMap<Object, Number> implements Result {
 	 * function.
 	 */
 	public ResultImpl(Linear objectiveFunction) {
+		super();
+		this.primalValues = new HashMap<Object,Number>();
+		this.dualValues = new HashMap<Object,Number>();
 		this.objectiveFunction = objectiveFunction;
 	}
 
@@ -60,7 +72,7 @@ public class ResultImpl extends HashMap<Object, Number> implements Result {
 		if (objectiveValue != null) {
 			return objectiveValue;
 		} else if (objectiveFunction != null) {
-			objectiveValue = objectiveFunction.evaluate(this);
+			objectiveValue = objectiveFunction.evaluate(this.primalValues);
 			return objectiveValue;
 		} else {
 			return null;
@@ -73,13 +85,67 @@ public class ResultImpl extends HashMap<Object, Number> implements Result {
 	 * @see net.sf.javailp.Result#getBoolean(java.lang.Object)
 	 */
 	public boolean getBoolean(Object key) {
-		Number number = get(key);
+		Number number = primalValues.get(key);
 		double v = number.doubleValue();
 		if (v == 0) {
 			return false;
 		} else {
 			return true;
 		}
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sf.javailp.Result#get(java.lang.Object)
+	 */
+	public Number get(Object key) {
+		return primalValues.get(key);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sf.javailp.Result#put(java.lang.Object, java.lang.Number)
+	 */
+	public void put(Object key, Number value) {
+		primalValues.put(key,value);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sf.javailp.Result#getPrimalValue(java.lang.Object)
+	 */
+	public Number getPrimalValue(Object key) {
+		return primalValues.get(key);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sf.javailp.Result#putPrimalValue(java.lang.Object, java.lang.Number)
+	 */
+	public void putPrimalValue(Object key, Number value) {
+		primalValues.put(key,value);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sf.javailp.Result#getDualValue(java.lang.Object)
+	 */
+	public Number getDualValue(Object key) {
+		return dualValues.get(key);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sf.javailp.Result#putDualValue(java.lang.Object, java.lang.Number)
+	 */
+	public void putDualValue(Object key, Number value) {
+		dualValues.put(key,value);
 	}
 
 	/*
@@ -88,7 +154,7 @@ public class ResultImpl extends HashMap<Object, Number> implements Result {
 	 * @see net.sf.javailp.Result#containsVar(java.lang.Object)
 	 */
 	public Boolean containsVar(Object var) {
-		return containsKey(var);
+		return primalValues.containsKey(var);
 	}
 
 	/*

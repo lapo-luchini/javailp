@@ -22,6 +22,7 @@ package net.sf.javailp;
  */
 public class Constraint {
 
+	protected final String name;
 	protected final Linear lhs;
 	protected final Operator operator;
 	protected final Number rhs;
@@ -40,6 +41,7 @@ public class Constraint {
 		this.lhs = lhs;
 		this.operator = operator;
 		this.rhs = rhs;
+		this.name = this.toString();
 	}
 
 	/**
@@ -63,7 +65,54 @@ public class Constraint {
 			throw new IllegalArgumentException("Unknown Boolean operator: "
 					+ operator);
 		}
+		this.lhs = lhs;
+		this.rhs = rhs;
+		this.name = this.toString();
+	}
+	
+	/**
+	 * Constructs a {@code Constraint}.
+	 * 
+	 * @param name
+	 * 			  the name of the constraint
+	 * @param lhs
+	 *            the left hand side
+	 * @param operator
+	 *            the operator
+	 * @param rhs
+	 *            the right hand side
+	 */
+	public Constraint(String name, Linear lhs, Operator operator, Number rhs) {
+		this.name = name;
+		this.lhs = lhs;
+		this.operator = operator;
+		this.rhs = rhs;
+	}
 
+	/**
+	 * Constructs a {@code Constraint}.
+	 * 
+	 * @param name
+	 * 			  the name of the constraint
+	 * @param lhs
+	 *            the left hand side
+	 * @param operator
+	 *            the operator ("<=","=",">=")
+	 * @param rhs
+	 *            the right hand side
+	 */
+	public Constraint(String name, Linear lhs, String operator, Number rhs) {
+		if (operator.equals("<=")) {
+			this.operator = Operator.LE;
+		} else if (operator.equals("=")) {
+			this.operator = Operator.EQ;
+		} else if (operator.equals(">=")) {
+			this.operator = Operator.GE;
+		} else {
+			throw new IllegalArgumentException("Unknown Boolean operator: "
+					+ operator);
+		}
+		this.name = name;
 		this.lhs = lhs;
 		this.rhs = rhs;
 
@@ -113,6 +162,15 @@ public class Constraint {
 	@Override
 	public String toString() {
 		return lhs.toString() + " " + operator.toString() + " " + rhs;
+	}
+	
+	/**
+	 * Returns the name of the constraint.
+	 * 
+	 * @return the name
+	 */
+	public String getName() {
+		return this.name;
 	}
 
 }

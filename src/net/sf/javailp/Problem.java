@@ -211,6 +211,50 @@ public class Problem {
 		}
 		add(lhs, o, rhs);
 	}
+	
+	/**
+	 * Adds a constraint.
+	 * 
+	 * @param name
+	 * 			  the name of the constraint
+	 * @param lhs
+	 *            the left-hand-side linear expression
+	 * @param operator
+	 *            the operator
+	 * @param rhs
+	 *            the right-hand-side number
+	 */
+	public void add(String name, Linear lhs, Operator operator, Number rhs) {
+		Linear linear = new Linear(lhs);
+		Constraint constraint = new Constraint(name, linear, operator, rhs);
+		add(constraint);
+	}
+
+	/**
+	 * Adds a constraint.
+	 * 
+	 * @param name
+	 * 			  the name of the constraint
+	 * @param lhs
+	 *            the left-hand-side linear expression
+	 * @param operator
+	 *            the operator (<=,=,>=)
+	 * @param rhs
+	 *            the right-hand-side number
+	 */
+	public void add(String name, Linear lhs, String operator, Number rhs) {
+		final Operator o;
+		if (operator.equals("<=")) {
+			o = Operator.LE;
+		} else if (operator.equals("=")) {
+			o = Operator.EQ;
+		} else if (operator.equals(">=")) {
+			o = Operator.GE;
+		} else {
+			throw new IllegalArgumentException("Unknown Boolean operator: " + operator);
+		}
+		add(name, lhs, o, rhs);
+	}
 
 	/**
 	 * Returns the variable type.

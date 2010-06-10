@@ -286,7 +286,7 @@ public class SolverMosek extends AbstractSolver {
 			double[] x = new double[nvar];
 			task.getsolutionslice(mosek.Env.soltype.itg, mosek.Env.solitem.xx, 0, nvar, x);
 
-			ResultImpl result;
+			Result result;
 			if (problem.getObjective() != null) {
 				result = new ResultImpl(problem.getObjective());
 			} else {
@@ -299,9 +299,9 @@ public class SolverMosek extends AbstractSolver {
 				double value = x[j];
 				if (problem.getVarType(variable).isInt()) {
 					int v = (int) Math.round(value);
-					result.put(variable, v);
+					result.putPrimalValue(variable, v);
 				} else {
-					result.put(variable, value);
+					result.putPrimalValue(variable, value);
 				}
 			}
 

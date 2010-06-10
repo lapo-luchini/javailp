@@ -81,7 +81,7 @@ public class SolverGLPK extends AbstractSolver {
 	public void removeHook(Hook hook) {
 		hooks.remove(hook);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -91,12 +91,20 @@ public class SolverGLPK extends AbstractSolver {
 
 		Map<Integer, Object> indexToVar = new HashMap<Integer, Object>();
 		Map<Object, Integer> varToIndex = new HashMap<Object, Integer>();
+		Map<Integer, Constraint> indexToCon = new HashMap<Integer, Constraint>();
+		//Map<Constraint, Integer> conToIndex = new HashMap<Constraint, Integer>();
 
 		int i = 1;
 		for (Object variable : problem.getVariables()) {
 			indexToVar.put(i, variable);
 			varToIndex.put(variable, i);
 			i++;
+		}
+		int k = 1;
+		for (Constraint constraint : problem.getConstraints()) {
+			indexToCon.put(k, constraint);
+			//conToIndex.put(constraint, k);
+			k++;
 		}
 
 		int ncon = problem.getConstraintsCount();
@@ -177,12 +185,14 @@ public class SolverGLPK extends AbstractSolver {
 			{
 				GLPK.glp_add_rows(lp, ncon);
 
-				int k = 1;
-				for (Constraint constraint : problem.getConstraints()) {
+				k = 1;
+				for (k = 1; k <= ncon; k++) {
+					Constraint constraint = indexToCon.get(k);
 
 					Linear linear = constraint.getLhs();
 					double rhs = constraint.getRhs().doubleValue();
 					int size = linear.size();
+					final String name = constraint.getName();
 
 					SWIGTYPE_p_int vars = GLPK.new_intArray(size + 1);
 					SWIGTYPE_p_double coeffs = GLPK.new_doubleArray(size + 1);
@@ -210,11 +220,10 @@ public class SolverGLPK extends AbstractSolver {
 						comp = GLPKConstants.GLP_FX;
 					}
 
-					GLPK.glp_set_row_name(lp, k, "constraint " + k);
+					GLPK.glp_set_row_name(lp, k, name);
 					GLPK.glp_set_mat_row(lp, k, size, vars, coeffs);
 					GLPK.glp_set_row_bnds(lp, k, comp, rhs, rhs);
-
-					k++;
+					
 				}
 			}
 
@@ -296,7 +305,7 @@ public class SolverGLPK extends AbstractSolver {
 			if (status == GLPKConstants.GLP_OPT
 					|| status == GLPKConstants.GLP_FEAS) {
 
-				ResultImpl result;
+				Result result;
 				if (problem.getObjective() != null) {
 					result = new ResultImpl(problem.getObjective());
 				} else {
@@ -305,15 +314,26 @@ public class SolverGLPK extends AbstractSolver {
 
 				for (i = 1; i <= nvar; i++) {
 					Object variable = indexToVar.get(i);
-					double value = GLPK.glp_mip_col_val(lp, i);
+					double primalValue = GLPK.glp_mip_col_val(lp, i);
+					double dualValue = GLPK.glp_get_col_dual(lp, i);
 
 					if (problem.getVarType(variable).isInt()) {
-						int v = (int) Math.round(value);
-						result.put(variable, v);
+						int v = (int) Math.round(primalValue);
+						result.putPrimalValue(variable, v);
 					} else {
-						result.put(variable, value);
+						result.putPrimalValue(variable, primalValue);
 					}
+					result.putDualValue(variable, dualValue);
 				}
+
+				for (i = 1; i <= ncon; i++) {
+					Constraint constraint = indexToCon.get(i);
+					double primalValue = GLPK.glp_get_row_prim(lp, i);
+					double dualValue = GLPK.glp_get_row_dual(lp, i);
+					result.putPrimalValue(constraint.getName(), primalValue);
+					result.putDualValue(constraint.getName(), dualValue);
+				}
+				
 				return result;
 			} else {
 				return null;
