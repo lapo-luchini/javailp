@@ -33,6 +33,11 @@ public interface Solver {
 	 * Identifier for the verbose value.
 	 */
 	public static final int VERBOSE = 1;
+	
+	/**
+	 * Identifier for the post-solve value.
+	 */
+	public static final int POSTSOLVE = 2;
 
 	/**
 	 * Sets a parameter.

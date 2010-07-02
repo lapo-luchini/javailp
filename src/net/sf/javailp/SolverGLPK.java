@@ -311,6 +311,21 @@ public class SolverGLPK extends AbstractSolver {
 				} else {
 					result = new ResultImpl();
 				}
+				
+				// post-solve: LP relaxation with fixed integers
+				Object postsolve = parameters.get(Solver.POSTSOLVE);
+				if (postsolve != null && ((Number)postsolve).intValue() != 0 ) {
+					boolean mip = false;
+					for (i = 1; i<= GLPK.glp_get_num_cols(lp); i++) {
+						int kind = GLPK.glp_get_col_kind(lp, i);
+						if (kind == GLPKConstants.GLP_IV || kind == GLPKConstants.GLP_BV) {
+							double x = GLPK.glp_mip_col_val(lp, i);
+							GLPK.glp_set_col_bnds(lp, i, GLPKConstants.GLP_FX, x, x);
+							mip = true;
+						}
+					}
+		            if (mip) status = GLPK.glp_simplex(lp, simplexParameters);
+				}
 
 				for (i = 1; i <= nvar; i++) {
 					Object variable = indexToVar.get(i);
