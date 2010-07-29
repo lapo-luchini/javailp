@@ -164,7 +164,7 @@ public class ResultImpl implements Result {
 	 */
 	@Override
 	public String toString() {
-		return "Objective: " + getObjective() + " " + super.toString();
+		return "Objective: " + getObjective() + " " + primalValues.toString();
 	}
 
 	private static final long serialVersionUID = 1L;

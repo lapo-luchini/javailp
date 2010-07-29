@@ -25,6 +25,7 @@ import net.sf.javailp.Solver;
 import net.sf.javailp.SolverFactory;
 import net.sf.javailp.SolverFactoryCPLEX;
 import net.sf.javailp.SolverFactoryGLPK;
+import net.sf.javailp.SolverFactoryGurobi;
 import net.sf.javailp.SolverFactoryLpSolve;
 import net.sf.javailp.SolverFactoryMiniSat;
 import net.sf.javailp.SolverFactoryMosek;
@@ -103,6 +104,23 @@ public class BooleanTest {
 	public void testSAT4JSAT() {
 		testSAT(new SolverFactorySAT4J());
 	}
+	
+	@Test
+	public void testGurobiMin() {
+		testMin(new SolverFactoryGurobi());
+	}
+
+	@Test
+	public void testGurobiMax() {
+		testMax(new SolverFactoryGurobi());
+	}
+	
+	@Test
+	public void testGurobiSAT() {
+		testSAT(new SolverFactoryGurobi());
+	}
+	
+	
 
 	protected void testMin(SolverFactory factory) {
 

@@ -25,5 +25,6 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/org.sat4j.pb.jar"/>
 	<classpathentry kind="lib" path="lib/glpk-java.jar"/>
+	<classpathentry kind="lib" path="lib/gurobi.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
