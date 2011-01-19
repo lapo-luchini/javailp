@@ -24,7 +24,7 @@ import net.sf.javailp.Solver;
 import net.sf.javailp.SolverFactory;
 import net.sf.javailp.SolverFactoryCPLEX;
 import net.sf.javailp.SolverFactoryGLPK;
-import net.sf.javailp.SolverFactoryLpSolve;
+import net.sf.javailp.SolverFactoryGurobi;
 
 public class Test {
 
@@ -36,7 +36,7 @@ public class Test {
 	}
 
 	public static void test() {
-		SolverFactory factory = new SolverFactoryLpSolve(); // use gurobi solver
+		SolverFactory factory = new SolverFactoryGurobi(); // use gurobi solver
 		factory.setParameter(Solver.VERBOSE, 0);
 		factory.setParameter(Solver.TIMEOUT, 100); // set timeout to 100 seconds
 

@@ -10,8 +10,8 @@
 	</tstamp>
 
 	<!-- VERSIONING -->
-	<!-- <property name="version" value="snapshot-${date-flat}" /> -->
-	<property name="version" value="1.2" />
+	<property name="version" value="snapshot-${date-flat}" />
+	<!-- <property name="version" value="1.2" /> -->
 	
 	<property name="version-minisat" value="1" />
 
