@@ -201,7 +201,7 @@ public class SolverLpSolve extends AbstractSolver {
 			double[] values = new double[problem.getVariablesCount()];
 			double[] dualValues = new double[problem.getConstraintsCount()];
 			lp.getVariables(values);
-			lp.getDualSolution(dualValues);
+			// lp.getDualSolution(dualValues); throws lpsolve.LpSolveException: Target array is too short to hold values
 
 			for (Object variable : problem.getVariables()) {
 
