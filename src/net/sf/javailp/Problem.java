@@ -211,12 +211,12 @@ public class Problem {
 		}
 		add(lhs, o, rhs);
 	}
-	
+
 	/**
 	 * Adds a constraint.
 	 * 
 	 * @param name
-	 * 			  the name of the constraint
+	 *            the name of the constraint
 	 * @param lhs
 	 *            the left-hand-side linear expression
 	 * @param operator
@@ -234,7 +234,7 @@ public class Problem {
 	 * Adds a constraint.
 	 * 
 	 * @param name
-	 * 			  the name of the constraint
+	 *            the name of the constraint
 	 * @param lhs
 	 *            the left-hand-side linear expression
 	 * @param operator
@@ -355,6 +355,39 @@ public class Problem {
 	 */
 	public void setVarUpperBound(Object variable, Number value) {
 		varUpperBound.put(variable, value);
+	}
+
+	/**
+	 * Sets the lower and upper bounds of a variable.
+	 * 
+	 * @param lower
+	 *            the lower bound
+	 * @param variable
+	 *            the variable
+	 * @param upper
+	 *            the upper bound
+	 */
+	public void setVarBounds(Number lower, Object variable, Number upper) {
+		setVarLowerBound(variable, lower);
+		setVarUpperBound(variable, upper);
+	}
+
+	/**
+	 * Sets the lower and upper bounds of a variable and the variable type.
+	 * 
+	 * @param lower
+	 *            the lower bound
+	 * @param variable
+	 *            the variable
+	 * @param upper
+	 *            the upper bound
+	 * @param type
+	 *            the variable type
+	 */
+	public void setVarBoundsAndType(Number lower, Object variable, Number upper, Class<?> type) {
+		setVarLowerBound(variable, lower);
+		setVarUpperBound(variable, upper);
+		setVarType(variable, type);
 	}
 
 	/*
