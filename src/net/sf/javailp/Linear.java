@@ -147,18 +147,21 @@ public class Linear implements Iterable<Term> {
 	 */
 	@Override
 	public String toString() {
-		String s = "";
+		StringBuffer s = new StringBuffer();
 		for (int i = 0; i < terms.size(); i++) {
 			Term term = terms.get(i);
 			Number coeff = term.getCoefficient();
 			Object variable = term.getVariable();
 
-			s += coeff + "*" + variable;
+			s.append(coeff).append("*").append(variable);
 			if (i < size() - 1) {
-				s += " + ";
+				if ((i+1) % 100 == 0) {
+					s.append("\n");
+				}
+				s.append(" + ");
 			}
 		}
-		return s;
+		return s.toString();
 	}
 
 	/**
@@ -169,6 +172,19 @@ public class Linear implements Iterable<Term> {
 	 * @return the value
 	 */
 	public Number evaluate(Map<Object, Number> result) {
+		return evaluate(result, false);
+	}
+	
+	/**
+	 * Evaluates the value of the linear expression.
+	 * 
+	 * @param result
+	 *            the result
+	 * @param ignoreMissingValues
+	 * 			  if true, values that are missing in result will be set to 0
+	 * @return the value
+	 */
+	public Number evaluate(Map<Object, Number> result, boolean ignoreMissingValues) {
 		double d = 0.0;
 		boolean asDouble = false;
 
@@ -184,8 +200,10 @@ public class Linear implements Iterable<Term> {
 			if (value != null) {
 				d += coeff.doubleValue() * value.doubleValue();
 			} else {
-				throw new IllegalArgumentException("The variable " + variable
-						+ " is missing in the given result.");
+				if (!ignoreMissingValues) {
+					throw new IllegalArgumentException("The variable " + variable
+							+ " is missing in the given result.");
+				}
 			}
 		}
 		if (asDouble) {

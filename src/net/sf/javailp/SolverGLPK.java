@@ -92,6 +92,7 @@ public class SolverGLPK extends AbstractSolver {
 		Map<Integer, Object> indexToVar = new HashMap<Integer, Object>();
 		Map<Object, Integer> varToIndex = new HashMap<Object, Integer>();
 		Map<Integer, Constraint> indexToCon = new HashMap<Integer, Constraint>();
+		int numberOfIntegerVariables = 0;
 		//Map<Constraint, Integer> conToIndex = new HashMap<Constraint, Integer>();
 
 		int i = 1;
@@ -128,10 +129,12 @@ public class SolverGLPK extends AbstractSolver {
 
 					final String name = variable.toString();
 					final int kind;
+					
 					switch (varType) {
 					case BOOL:
 					case INT:
 						kind = GLPKConstants.GLP_IV;
+						numberOfIntegerVariables++;
 						break;
 					default: // REAL
 						kind = GLPKConstants.GLP_CV;
@@ -298,13 +301,10 @@ public class SolverGLPK extends AbstractSolver {
 				integerParameters.setMsg_lev(msgLevel);
 			}
 
-			GLPK.glp_simplex(lp, simplexParameters);
-			GLPK.glp_intopt(lp, integerParameters);
-			int status = GLPK.glp_mip_status(lp);
-
-			if (status == GLPKConstants.GLP_OPT
-					|| status == GLPKConstants.GLP_FEAS) {
-
+			if (numberOfIntegerVariables == 0) {
+				
+				GLPK.glp_simplex(lp, simplexParameters);
+				
 				Result result;
 				if (problem.getObjective() != null) {
 					result = new ResultImpl(problem.getObjective());
@@ -312,24 +312,9 @@ public class SolverGLPK extends AbstractSolver {
 					result = new ResultImpl();
 				}
 				
-				// post-solve: LP relaxation with fixed integers
-				Object postsolve = parameters.get(Solver.POSTSOLVE);
-				if (postsolve != null && ((Number)postsolve).intValue() != 0 ) {
-					boolean mip = false;
-					for (i = 1; i<= GLPK.glp_get_num_cols(lp); i++) {
-						int kind = GLPK.glp_get_col_kind(lp, i);
-						if (kind == GLPKConstants.GLP_IV || kind == GLPKConstants.GLP_BV) {
-							double x = GLPK.glp_mip_col_val(lp, i);
-							GLPK.glp_set_col_bnds(lp, i, GLPKConstants.GLP_FX, x, x);
-							mip = true;
-						}
-					}
-		            if (mip) status = GLPK.glp_simplex(lp, simplexParameters);
-				}
-
 				for (i = 1; i <= nvar; i++) {
 					Object variable = indexToVar.get(i);
-					double primalValue = GLPK.glp_mip_col_val(lp, i);
+					double primalValue = GLPK.glp_get_col_prim(lp, i);
 					double dualValue = GLPK.glp_get_col_dual(lp, i);
 
 					if (problem.getVarType(variable).isInt()) {
